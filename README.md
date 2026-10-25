@@ -7,6 +7,15 @@ Includes:
 - A small **web app** — paste JSON and download the deck
 - A **CLI script** — convert `.json` files locally
 
+## Shared decks
+
+JSON decks live in [`examples/`](examples/) and are copied to `public/examples/` so the site can load them. The list on the homepage comes from [`lib/shared-decks.ts`](lib/shared-decks.ts). To add another shared deck:
+
+1. Add `examples/your-deck.json` and copy it to `public/examples/`.
+2. Add an entry in `lib/shared-decks.ts`.
+
+Select a shared deck in the UI, then generate the `.apkg`.
+
 ## Live site (free on GitHub Pages)
 
 **https://arefrafei92.github.io/json-to-anki-apkg/**
