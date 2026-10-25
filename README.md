@@ -13,6 +13,17 @@ Shared JSON decks live in [`public/shared-decks/`](public/shared-decks/) and are
 
 1. Add `public/shared-decks/your-deck.json`.
 2. Add an entry in `lib/shared-decks.ts`.
+3. Run `npm run check:decks`. It validates every deck, checks the card counts in the registry, and flags unlisted files. The deploy workflow runs it too.
+
+Current collection (15 decks, 645 cards):
+
+| Category | Decks |
+|---|---|
+| Java | Modern Java (Junior to Mid), Java Concurrency in Practice, JVM Memory and Debugging, Spring Boot and JPA at Work |
+| Software engineering | Software Engineering Fundamentals, SQL and Databases at Work, Git — Commands and Situations, Docker and Containers |
+| System design and coding | System Design Fundamentals, Coding Interview Patterns (DSA) |
+| Production and performance | Caching in Java Services, Observability and Incidents |
+| English communication | Professional English at Work, Casual English and Small Talk, English Grammar That Matters |
 
 To build one from the command line: `npm run json-to-apkg -- public/shared-decks/docker-and-containers.json`.
 

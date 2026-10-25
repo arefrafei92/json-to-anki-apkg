@@ -1,0 +1,613 @@
+{
+  "deck": "English Grammar That Matters",
+  "description": "The grammar points that most often trip up non-native professionals: tenses (present perfect, continuous, future forms), articles, uncountable nouns, gerunds vs infinitives, question word order, conditionals, polite modals, prepositions, and common mistakes, with workplace examples.",
+  "cards": [
+    {
+      "type": "basic",
+      "front": "Correct this: 'I have did the code review yesterday.'",
+      "back": "I did the code review yesterday.",
+      "explanation": "Yesterday = simple past (did). Present perfect (have done) doesn't take a finished time like yesterday.",
+      "example": "I reviewed it yesterday. I've already left a comment.",
+      "tags": [
+        "grammar",
+        "common-mistakes"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "Correct this: 'He don't has access to production.'",
+      "back": "He doesn't have access to production.",
+      "explanation": "Third person: doesn't + base verb. Have, not has, after doesn't.",
+      "example": "She doesn't have permission to merge to main.",
+      "tags": [
+        "grammar",
+        "common-mistakes"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "Correct this: 'We was blocked by the API change.'",
+      "back": "We were blocked by the API change.",
+      "explanation": "We/you/they + were. I/he/she/it + was.",
+      "example": "They were blocked until the contract tests passed.",
+      "tags": [
+        "grammar",
+        "common-mistakes"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "Correct this: 'Please explain me the stack trace.'",
+      "back": "Please explain the stack trace to me.",
+      "explanation": "Explain doesn't take a person as a direct object.",
+      "example": "Can you explain the stack trace to me?",
+      "tags": [
+        "grammar",
+        "common-mistakes"
+      ]
+    },
+    {
+      "front": "Present perfect vs past simple: when do you use each?",
+      "back": "Past simple for a finished time (yesterday, last week, in 2023, at 3 pm). Present perfect for past actions connected to now, with no finished time: experience, results, or 'up to now' (already, yet, ever, just, so far, this week).",
+      "explanation": "If you can say when, use past simple. 'I have finished it yesterday' is wrong. Present perfect focuses on the present result: 'I've fixed the bug' (it's fixed now).",
+      "example": "I've deployed the fix. (result now) / I deployed it at 10 a.m. (finished time) / Have you ever used Kotlin?",
+      "tags": [
+        "grammar",
+        "tenses"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Where do 'already' and 'yet' go, and which tense do they usually take?",
+      "back": "Usually the present perfect. 'Yet' goes at the end of questions and negatives; 'already' goes in positive sentences, usually before the main verb. (American English also accepts past simple: 'Did you finish yet?')",
+      "explanation": "I've already merged it. / I haven't merged it yet. / Have you merged it yet? 'Already' in a question shows surprise: 'Have you already finished?!'",
+      "example": "The PR isn't approved yet, but I've already fixed the comments.",
+      "tags": [
+        "grammar",
+        "tenses",
+        "adverbs"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "When do you use the present perfect continuous (have been doing)?",
+      "back": "For an activity that started in the past and is still going on or just stopped, emphasizing duration: 'I've been working on this bug for two days.'",
+      "explanation": "Compare: 'I've been fixing tests all morning' (activity, maybe not done) vs 'I've fixed five tests' (completed results, a number). Stative verbs (know, like, own) don't use the continuous: 'I've known him for years'.",
+      "example": "We've been waiting for the security review since Monday.",
+      "tags": [
+        "grammar",
+        "tenses"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you talk about future plans: 'will', 'going to', or present continuous?",
+      "back": "Present continuous for fixed arrangements (I'm meeting the client on Friday). 'Going to' for plans already decided and predictions from evidence (I'm going to refactor this; the build is going to fail). 'Will' for decisions made now, offers, and promises (I'll check it).",
+      "explanation": "In meetings, 'I'll take that' (deciding now) sounds natural. 'I will take that' with full 'will' sounds formal or insistent.",
+      "example": "A: Who can update the docs? B: I'll do it. (decision now) / I'm going to update the docs tomorrow. (already planned)",
+      "tags": [
+        "grammar",
+        "tenses",
+        "future"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Past continuous vs past simple in a story?",
+      "back": "Past continuous (was/were doing) sets the background action in progress; past simple is the shorter event that happened during it.",
+      "explanation": "This is the most natural way to describe incidents. Use 'when' before the past simple event and 'while' before the continuous background.",
+      "example": "I was deploying the release when the database went down. / While we were testing, the server restarted.",
+      "tags": [
+        "grammar",
+        "tenses",
+        "storytelling"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "'A' or 'an' before abbreviations like API, SQL, URL, HTTP?",
+      "back": "Choose by the first sound, not the letter: an API (ay), an HTTP request (aitch), an SQL query if you say 'ess-cue-el' but a SQL query if you say 'sequel', a URL (you), a user (you), an hour (silent h), a one-time token (wun).",
+      "explanation": "'An' goes before a vowel sound, 'a' before a consonant sound. Both 'a SQL' and 'an SQL' appear in writing because people pronounce it differently.",
+      "example": "We need an API key and a URL for the webhook. It takes an hour.",
+      "tags": [
+        "grammar",
+        "articles",
+        "pronunciation"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "When do you use 'the', and when no article at all?",
+      "back": "'The' for something specific that both speakers know (the build, the bug I mentioned, the main branch). No article for plural or uncountable nouns used in general (Developers love coffee. Security matters.).",
+      "explanation": "Common mistake from many languages: 'The developers love coffee' when you mean developers in general. Use 'a/an' to introduce a singular countable thing for the first time, then 'the' after.",
+      "example": "I found a bug in the login flow. The bug only happens on Safari. Bugs like this are hard to reproduce.",
+      "tags": [
+        "grammar",
+        "articles"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Correct this: 'Can you give me some informations and advices about the softwares?'",
+      "back": "'Can you give me some information and advice about the software?'",
+      "explanation": "Information, advice, feedback, software, hardware, equipment, research, knowledge, furniture, and homework are uncountable: no plural -s and no 'a'. To count them, use 'a piece of advice', 'a bit of feedback', 'two pieces of software', 'a tool'.",
+      "example": "Thanks for the feedback! One more piece of advice: add tests.",
+      "tags": [
+        "grammar",
+        "uncountable",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Is it 'codes' or 'code'?",
+      "back": "'Code' as programming source is uncountable: 'I wrote some code', 'a lot of code', 'a piece of code / a snippet'. 'Codes' is only for separate identifiers: error codes, status codes, promo codes.",
+      "explanation": "'Please review my codes' is a very common non-native mistake. Say 'my code', 'my changes', or 'my PR'.",
+      "example": "This code returns three different error codes.",
+      "tags": [
+        "grammar",
+        "uncountable",
+        "dev-talk"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Much or many? Fewer or less? Few or little?",
+      "back": "Countable nouns: many, few, fewer (many bugs, fewer meetings). Uncountable nouns: much, little, less (much time, less traffic).",
+      "explanation": "'Less meetings' is very common in speech, but 'fewer meetings' is correct in careful writing. In positive sentences 'a lot of' sounds more natural than 'much': 'We have a lot of work' not 'We have much work'.",
+      "example": "We have fewer incidents and less downtime this quarter. How many tickets are left? How much time do we have?",
+      "tags": [
+        "grammar",
+        "quantifiers"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Which common verbs take -ing after them?",
+      "back": "enjoy, avoid, suggest, recommend, consider, mind, finish, keep, practice, risk, deny, can't help, look forward to.",
+      "explanation": "'I suggest to use a map' is wrong: 'I suggest using a map' or 'I suggest that we use a map'. 'Look forward to' ends with the preposition 'to', so it takes -ing: 'I look forward to hearing from you'.",
+      "example": "Would you mind sharing your screen? I recommend adding a retry. I look forward to working with you.",
+      "tags": [
+        "grammar",
+        "gerunds",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Which common verbs take 'to + verb' after them?",
+      "back": "want, need, decide, plan, agree, hope, expect, promise, refuse, manage, offer, seem, tend, would like.",
+      "explanation": "'I want that you review it' is wrong: 'I want you to review it'. Same pattern: need/expect/ask someone to do something.",
+      "example": "We decided to postpone the release. I'd like you to take a look. She managed to fix it before the demo.",
+      "tags": [
+        "grammar",
+        "infinitives",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What's the difference: 'stop doing' vs 'stop to do', 'remember doing' vs 'remember to do'?",
+      "back": "'Stop doing' = quit the activity; 'stop to do' = pause in order to do something else. 'Remember doing' = have a memory of it; 'remember to do' = not forget a future task. 'Forget' and 'try' change meaning the same way.",
+      "explanation": "'Try restarting it' = experiment with this solution. 'Try to restart it' = make an effort (it might be hard).",
+      "example": "We stopped using Jenkins. / He stopped to answer a call. / Remember to rotate the keys. / I remember fixing this before.",
+      "tags": [
+        "grammar",
+        "gerunds",
+        "infinitives"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Make or do?",
+      "back": "'Do' for tasks, work, and activities in general: do a review, do the dishes, do research, do your best, do a favor. 'Make' for creating or producing something, and decisions: make a decision, make a mistake, make a change, make progress, make a call, make sure.",
+      "explanation": "These are fixed collocations; learn them as chunks. 'Do a mistake' and 'make a research' are common errors.",
+      "example": "We made good progress, but we need to make a decision before we do the migration.",
+      "tags": [
+        "grammar",
+        "collocations",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Say or tell?",
+      "back": "'Tell' needs a person: tell someone something. 'Say' doesn't take a person directly: say something (to someone).",
+      "explanation": "'He said me that...' is wrong: 'He told me that...' or 'He said that...'. Fixed: tell the truth, tell a story, tell the difference; say hello, say sorry.",
+      "example": "She told me the build was broken. She said it was broken. Can you tell the difference?",
+      "tags": [
+        "grammar",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Correct this: 'Can you tell me where is the config file?'",
+      "back": "'Can you tell me where the config file is?'",
+      "explanation": "Indirect (embedded) questions use statement word order: no inversion and no do/does/did. 'Do you know what time it starts?' not 'what time does it start?'. Use 'if' or 'whether' for yes/no: 'Do you know if the API is down?'",
+      "example": "Could you explain why the test fails? Do you know whether we support Java 21?",
+      "tags": [
+        "grammar",
+        "questions",
+        "word-order"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Correct this: 'What this method does?' and 'Why you didn't push?'",
+      "back": "'What does this method do?' and 'Why didn't you push?'",
+      "explanation": "Direct questions need an auxiliary (do/does/did, is, have, can) before the subject. Exception: when the question word is the subject itself: 'Who broke the build?' (no 'did').",
+      "example": "Where do you store the secrets? What happened? Who approved this PR?",
+      "tags": [
+        "grammar",
+        "questions",
+        "word-order"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Correct this: 'I'm working here since 2022.'",
+      "back": "'I've been working here since 2022.' (or 'I've worked here since 2022.')",
+      "explanation": "For a situation that started in the past and continues now, English uses present perfect, not present simple or continuous. 'Since' + starting point; 'for' + length of time.",
+      "example": "I've known her for five years. We've used Kafka since last spring.",
+      "tags": [
+        "grammar",
+        "tenses",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Correct this: 'If I would have known, I would have told you.'",
+      "back": "'If I had known, I would have told you.'",
+      "explanation": "Third conditional (imaginary past): If + past perfect, would have + past participle. Never 'would' in the if-clause. In speech: 'If I'd known, I'd have told you.'",
+      "example": "If we had added an alert, we would have caught it earlier.",
+      "tags": [
+        "grammar",
+        "conditionals",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Zero, first, and second conditionals: what's the difference?",
+      "back": "Zero (always true): If + present, present — If the cache is cold, requests are slow. First (real future): If + present, will — If the tests pass, I'll merge. Second (imaginary or unlikely now): If + past, would — If we had more time, we would rewrite it.",
+      "explanation": "Don't use 'will' in the if-clause: 'If it will rain' is wrong. 'Unless' = if not: 'Don't merge unless the build is green.'",
+      "example": "If I were the tech lead, I'd split this service. (second, imaginary)",
+      "tags": [
+        "grammar",
+        "conditionals"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do modal verbs make requests more polite?",
+      "back": "From direct to polite: 'Can you...?' → 'Could you...?' → 'Would you mind ...ing?' → 'I was wondering if you could...'",
+      "explanation": "Past forms (could, would, was wondering) add distance, which sounds softer in English. 'Would you mind' expects -ing, and you answer 'No, not at all' to say yes.",
+      "example": "I was wondering if you could take a look at my PR when you have a moment.",
+      "tags": [
+        "grammar",
+        "modals",
+        "politeness"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "When should you use the passive voice at work?",
+      "back": "When the action matters more than who did it, the actor is unknown, or naming a person would sound like blame: 'The bug was introduced in version 2.3.'",
+      "explanation": "In postmortems, passive and system-focused language keeps things blameless. Elsewhere, prefer active voice; it's clearer and shorter: 'We fixed the bug' rather than 'The bug was fixed by us'.",
+      "example": "The config was changed at 14:02, and the service was restarted automatically.",
+      "tags": [
+        "grammar",
+        "passive",
+        "writing"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How does reported speech work?",
+      "back": "Usually shift the tense back one step after a past reporting verb: 'The build is failing' → She said (that) the build was failing. 'We will deploy' → He said they would deploy.",
+      "explanation": "If the fact is still true now, you can keep the present: 'She said the service is down' (it's still down). Questions become statements: 'He asked if I had pushed'.",
+      "example": "The PM said they needed it by Friday. He asked when we could release.",
+      "tags": [
+        "grammar",
+        "reported-speech"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Who, which, or that, and when do you need commas?",
+      "back": "Who for people, which for things, that for both in defining clauses. Non-defining clauses (extra information, with commas) use who or which, never that.",
+      "explanation": "Defining: 'The service that handles payments is down' (which service? this one). Non-defining: 'The payment service, which we migrated last year, is down' (extra detail).",
+      "example": "The engineer who wrote this has left. Our API, which is public, needs versioning.",
+      "tags": [
+        "grammar",
+        "relative-clauses",
+        "writing"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "It's vs its, there / their / they're, your / you're, then / than?",
+      "back": "it's = it is; its = belonging to it. there = place; their = belonging to them; they're = they are. you're = you are; your = belonging to you. then = time/next; than = comparison.",
+      "explanation": "Native speakers also mix these up in writing, but in documentation and emails they look careless. Read your message once before sending.",
+      "example": "It's faster than the old version; its memory use is lower too. They're moving their service over there.",
+      "tags": [
+        "grammar",
+        "spelling",
+        "writing"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Affect vs effect, lose vs loose?",
+      "back": "'Affect' is usually a verb (to influence); 'effect' is usually a noun (the result). 'Lose' = not have anymore; 'loose' = not tight.",
+      "explanation": "Memory trick: Affect = Action (verb), Effect = End result (noun). 'Loose coupling' (correct) vs 'we might lose data' (correct).",
+      "example": "The outage affected 5% of users. The effect on revenue was small. We don't want to lose any messages.",
+      "tags": [
+        "grammar",
+        "spelling",
+        "vocabulary"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Prepositions of time: in, on, or at?",
+      "back": "at + clock times and specific points (at 3 pm, at noon, at the end of the sprint). on + days and dates (on Monday, on May 5). in + months, years, seasons, parts of the day, and 'after a period' (in March, in 2026, in the morning, in two days).",
+      "explanation": "'In two days' = two days from now. 'Within two days' = any time before two days have passed. No preposition before next, last, this, every: 'next Monday', not 'on next Monday'.",
+      "example": "The release is on Friday at 10. I'll reply in an hour. We deploy every Tuesday.",
+      "tags": [
+        "grammar",
+        "prepositions",
+        "time"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Correct this: 'I am agree with you' and 'It is depend on the load.'",
+      "back": "'I agree with you.' and 'It depends on the load.'",
+      "explanation": "Agree and depend are normal verbs, not adjectives, so no 'am/is' before them. Negative: 'I don't agree' or 'I disagree'.",
+      "example": "I agree that we need a cache, but the size depends on the traffic.",
+      "tags": [
+        "grammar",
+        "verbs",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Correct this: 'This approach is more better and more faster.'",
+      "back": "'This approach is better and faster.'",
+      "explanation": "Short adjectives take -er (faster, cheaper) and long ones take 'more' (more reliable), never both. Irregular: good → better → best, bad → worse → worst. Comparisons use 'than': 'faster than before'.",
+      "example": "Redis is faster than the database, but the database is more reliable for this data.",
+      "tags": [
+        "grammar",
+        "comparatives",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Where do frequency adverbs (always, usually, often, never) go?",
+      "back": "Before the main verb, but after 'be' and after the first auxiliary: 'I always check the logs.' / 'The build is usually green.' / 'I have never seen this error.'",
+      "explanation": "'I check always the logs' is a common word-order error. 'Sometimes' can also go at the start: 'Sometimes the test fails.'",
+      "example": "We usually deploy on Tuesdays, but we never deploy on Fridays.",
+      "tags": [
+        "grammar",
+        "word-order",
+        "adverbs"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "'Used to do' vs 'be used to doing'?",
+      "back": "'Used to + verb' = a past habit that's no longer true. 'Be / get used to + -ing' = be / become familiar with something.",
+      "explanation": "'I'm used to work late' is wrong: 'I'm used to working late'. Negative past habit: 'We didn't use to have code reviews' (no -d after didn't).",
+      "example": "We used to deploy manually. I'm still getting used to working with Kotlin.",
+      "tags": [
+        "grammar",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Subject-verb agreement traps: 'The list of users is/are', 'Everyone has/have', 'The team is/are'?",
+      "back": "'The list of users is' (the subject is 'list'). 'Everyone has' (everyone, someone, nobody, each take singular verbs). 'The team is' in American English; British English also allows 'the team are'.",
+      "explanation": "Find the real subject, skipping the 'of ...' phrase. 'Data is' and 'data are' are both accepted; 'data is' is more common in tech.",
+      "example": "Each of the services has its own database. The number of errors is rising.",
+      "tags": [
+        "grammar",
+        "agreement"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is a comma splice, and how do you fix it in writing?",
+      "back": "Joining two complete sentences with only a comma: 'The build failed, I fixed it.' Fix with a period, a semicolon, or a conjunction: 'The build failed, so I fixed it.'",
+      "explanation": "Very common in chat, but in docs, tickets, and emails it reads as sloppy. Short sentences are usually clearer anyway.",
+      "example": "The deploy is done. Monitoring looks normal, but I'll keep an eye on error rates.",
+      "tags": [
+        "grammar",
+        "punctuation",
+        "writing"
+      ],
+      "type": "basic"
+    },
+    {
+      "type": "cloze",
+      "text": "Let's discuss {{c1::the}} rollout plan.",
+      "extra": "Discuss + object. Don't say 'discuss about'.",
+      "tags": [
+        "grammar",
+        "common-mistakes"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "This change depends {{c1::on}} the auth service.",
+      "extra": "Depend on + noun. Not 'depend of' or 'depend from'.",
+      "tags": [
+        "grammar",
+        "collocation"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I'm responsible {{c1::for}} the payment module.",
+      "extra": "Responsible for + noun or -ing. Not 'responsible of'.",
+      "tags": [
+        "grammar",
+        "collocation"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "We're waiting {{c1::for}} the pipeline to finish.",
+      "extra": "Wait for someone/something. 'Wait on' is possible but less common here.",
+      "tags": [
+        "grammar",
+        "collocation"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Could you explain this {{c1::to}} me?",
+      "extra": "Explain something to someone. Not 'explain me this'.",
+      "tags": [
+        "grammar",
+        "common-mistakes"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I suggest {{c1::adding}} a null check.",
+      "extra": "Suggest + -ing, or suggest that we add. Not 'suggest to add'.",
+      "tags": [
+        "grammar",
+        "code-review"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "We need to avoid {{c1::shipping}} this without a test.",
+      "extra": "Avoid + -ing. Not 'avoid to ship'.",
+      "tags": [
+        "grammar"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I'm interested {{c1::in}} pairing on this.",
+      "extra": "Interested in + noun or -ing. Not 'interested on'.",
+      "tags": [
+        "grammar",
+        "collaboration"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "The bug has been open {{c1::for}} three days.",
+      "extra": "For + a duration. Since + a starting point (since Monday).",
+      "tags": [
+        "grammar"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I've been working on this {{c1::since}} Monday.",
+      "extra": "Since + a point in time. Use present perfect for something that started then and continues.",
+      "tags": [
+        "grammar"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "If the build {{c1::fails}}, I'll fix it before standup.",
+      "extra": "First conditional for a real future: if + present, will + verb. Not 'if it will fail'.",
+      "tags": [
+        "grammar"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "If I {{c1::were}} you, I'd split this class.",
+      "extra": "Second conditional for advice: if I were you, I'd... 'Were' is standard here, not 'was'.",
+      "tags": [
+        "grammar",
+        "code-review"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "The tests passed, {{c1::so}} I merged the PR.",
+      "extra": "So + result. Because + reason. Don't use both: not 'because so'.",
+      "tags": [
+        "grammar"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I finished the fix, {{c1::but}} the integration test is still red.",
+      "extra": "But contrasts. And adds. So gives a result.",
+      "tags": [
+        "grammar",
+        "status"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I {{c1::have worked}} here for three years, and I {{c2::joined}} the platform team last year.",
+      "extra": "Present perfect for up-to-now duration; past simple for a finished time.",
+      "tags": [
+        "grammar",
+        "tenses"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Thanks for your {{c1::feedback}}; it was really useful.",
+      "extra": "Feedback is uncountable: no 'feedbacks', no 'a feedback'.",
+      "tags": [
+        "grammar",
+        "uncountable"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I look forward to {{c1::hearing}} from you.",
+      "extra": "'To' here is a preposition, so it takes -ing.",
+      "tags": [
+        "grammar",
+        "gerunds",
+        "email"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Do you know where {{c1::the logs are}}?",
+      "extra": "Indirect questions use statement word order.",
+      "tags": [
+        "grammar",
+        "questions"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "We need to {{c1::make}} a decision before we {{c2::do}} the migration.",
+      "extra": "Make a decision / a mistake / progress; do a task / research / a review.",
+      "tags": [
+        "grammar",
+        "collocations"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "The meeting is {{c1::on}} Monday {{c2::at}} 10 a.m.",
+      "extra": "On + days and dates; at + clock times; in + months and years.",
+      "tags": [
+        "grammar",
+        "prepositions"
+      ]
+    }
+  ]
+}

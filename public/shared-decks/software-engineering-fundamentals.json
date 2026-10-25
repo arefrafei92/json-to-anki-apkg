@@ -1,0 +1,393 @@
+{
+  "deck": "Software Engineering Fundamentals",
+  "description": "Design and engineering practice beyond a single language: SOLID, coupling and cohesion, design patterns, clean code and refactoring, testing strategy, code review, REST API design, security basics, CI/CD, feature flags, and estimation.",
+  "cards": [
+    {
+      "front": "What does the S in SOLID (Single Responsibility) really mean?",
+      "back": "A module should have one reason to change, meaning it serves one actor or concern. It is not 'a class does one tiny thing'.",
+      "explanation": "If a class changes when finance rules change and also when the PDF layout changes, those two concerns should be split. Signs of violation: a huge class name ending in Manager or Helper, many unrelated dependencies, and merge conflicts from different teams.",
+      "example": "InvoiceService computes totals; InvoicePdfRenderer formats them. A tax rule change touches only the first.",
+      "tags": [
+        "design",
+        "solid"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is the Open/Closed Principle in practice?",
+      "back": "You should be able to add new behavior by adding code (a new implementation) rather than editing a growing if/else or switch in existing code.",
+      "explanation": "Apply it where variation is real and repeated, like payment providers or export formats. Don't add extension points for imagined future needs (that's YAGNI).",
+      "example": "interface PaymentProvider { Result charge(Payment p); } — adding PayPal means a new class, not another branch in PaymentService.",
+      "tags": [
+        "design",
+        "solid"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does the Liskov Substitution Principle forbid?",
+      "back": "A subtype must work anywhere its parent type is expected, without surprising callers: no stronger preconditions, no weaker guarantees, no new exceptions the caller doesn't expect.",
+      "explanation": "Classic violation: Square extends Rectangle, where setWidth also changes height. In Java: a List implementation that throws UnsupportedOperationException on add (like List.of) surprises code that expects a mutable list.",
+      "example": "Collections returned by List.of are immutable; passing them to a method that sorts in place throws at runtime.",
+      "tags": [
+        "design",
+        "solid"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What do the Interface Segregation and Dependency Inversion principles say?",
+      "back": "Interface Segregation: clients shouldn't depend on methods they don't use, so prefer small, focused interfaces. Dependency Inversion: high-level business code should depend on abstractions it owns, and infrastructure (databases, HTTP clients) implements them.",
+      "explanation": "Dependency inversion is what lets you unit-test business logic with a fake repository and swap a vendor without touching the core. It's the idea behind hexagonal (ports and adapters) architecture.",
+      "example": "OrderService depends on interface OrderRepository; JpaOrderRepository and InMemoryOrderRepository implement it.",
+      "tags": [
+        "design",
+        "solid",
+        "architecture"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What are coupling and cohesion, and which way should each go?",
+      "back": "Coupling is how much one module depends on another's details; keep it low. Cohesion is how closely the parts inside a module belong together; keep it high.",
+      "explanation": "Low coupling lets you change one module without a chain of edits elsewhere. High cohesion means related code lives together, so a feature change touches one place. Package by feature (orders/, billing/) usually gives better cohesion than package by layer (controllers/, services/).",
+      "example": "A change to the discount rule requiring edits in 9 files across 5 packages is a coupling and cohesion smell.",
+      "tags": [
+        "design",
+        "architecture"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What do DRY, KISS, and YAGNI mean, and how can DRY be misapplied?",
+      "back": "DRY: each piece of knowledge has one authoritative place. KISS: prefer the simplest solution that works. YAGNI: don't build features or abstractions until they're needed.",
+      "explanation": "DRY is about knowledge, not similar-looking code. Merging two pieces of code that look alike but change for different reasons creates a wrong abstraction full of flags. A little duplication is cheaper than the wrong abstraction.",
+      "example": "Two validators both check 'length < 50' for different business reasons; sharing one constant couples them for no benefit.",
+      "tags": [
+        "design",
+        "principles"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Composition over inheritance: why?",
+      "back": "Inheritance couples a subclass to its parent's internals and fixes the relationship at compile time. Composition (holding a collaborator and delegating to it) is more flexible and easier to test.",
+      "explanation": "Use inheritance for true 'is-a' relationships with a stable base, like sealed hierarchies of domain types. For reusing behavior, inject a collaborator instead. Deep inheritance trees are hard to understand and change.",
+      "example": "Instead of CachedUserRepository extends JpaUserRepository, write CachingUserRepository implements UserRepository that wraps any UserRepository.",
+      "tags": [
+        "design",
+        "oop"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is the Strategy pattern, and how does it look in modern Java?",
+      "back": "Encapsulate interchangeable algorithms behind one interface and choose one at runtime. In modern Java a strategy is often just a lambda or a Map from key to implementation.",
+      "explanation": "It replaces long switch statements on a type. In Spring, inject List<Strategy> or Map<String, Strategy> (bean name → bean) and pick by key.",
+      "example": "Map<Carrier, ShippingCostCalculator> calculators; calculators.get(order.carrier()).cost(order);",
+      "tags": [
+        "design-patterns",
+        "strategy"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "When do you use the Builder pattern?",
+      "back": "When an object has many parameters, especially optional ones, so a constructor call becomes unreadable or you'd need many overloaded constructors.",
+      "explanation": "Builders make calls self-describing and can validate before build(). Lombok's @Builder generates one. For a few required fields, a record with a compact constructor is simpler.",
+      "example": "HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(2)).header(\"Accept\", \"application/json\").GET().build();",
+      "tags": [
+        "design-patterns",
+        "builder"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What problem do the Factory, Adapter, and Decorator patterns each solve?",
+      "back": "Factory: hides which concrete class gets created. Adapter: wraps an existing class so it fits the interface your code expects. Decorator: wraps an object with the same interface to add behavior (logging, caching, retries) without changing it.",
+      "explanation": "Adapters are everywhere at integration boundaries (wrapping a vendor SDK behind your own interface). Decorators are how Java I/O streams and many Spring proxies work.",
+      "example": "new BufferedReader(new InputStreamReader(socket.getInputStream())) is decorators stacked on an adapter.",
+      "tags": [
+        "design-patterns"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is the Observer pattern, and where do you meet it in backend Java?",
+      "back": "Subscribers register with a subject and get notified when something happens, so the publisher doesn't know who listens. In backend Java: Spring application events (@EventListener), message brokers, and listeners in libraries.",
+      "explanation": "It decouples, but hides flow: it's harder to see what happens when an event fires. Spring's @TransactionalEventListener(phase = AFTER_COMMIT) avoids reacting to changes that later roll back.",
+      "example": "OrderPlacedEvent published; EmailListener and AnalyticsListener react independently.",
+      "tags": [
+        "design-patterns",
+        "events"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What makes a good name in code?",
+      "back": "It says what the thing is or does in domain terms, at the right level of detail, with no abbreviations only you understand. Booleans read as questions (isActive, hasAccess); methods are verbs (calculateTotal).",
+      "explanation": "Names are the main documentation readers get. If a name needs a comment to explain it, rename it. Avoid vague words (data, info, manager, process, handle) unless the context makes them precise.",
+      "example": "int d; // elapsed days  →  int elapsedDays;  List<User> list → List<User> overdueAccounts.",
+      "tags": [
+        "clean-code",
+        "naming"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is a code smell? Name five common ones.",
+      "back": "A surface sign that the design may have a deeper problem. Common smells: long method, large class, long parameter list, feature envy (a method uses another class's data more than its own), primitive obsession (strings for IDs, money as double), and shotgun surgery (one change needs edits in many places).",
+      "explanation": "Smells are hints, not rules. Each has a known refactoring: extract method, extract class, introduce parameter object, move method, introduce value object.",
+      "example": "createUser(String, String, String, String, boolean, boolean) → createUser(NewUserRequest request).",
+      "tags": [
+        "clean-code",
+        "refactoring"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you refactor safely?",
+      "back": "Make sure tests cover the behavior, then change structure in small steps without changing behavior, running tests after each step, and commit often. Keep refactoring commits separate from behavior changes.",
+      "explanation": "Mixing a refactor and a feature in one PR makes review hard and rollback risky. IDE refactorings (rename, extract, inline, move) are safer than manual edits. For legacy code without tests, first add characterization tests that capture current behavior.",
+      "example": "PR 1: extract PriceCalculator, no behavior change. PR 2: add the new discount rule in PriceCalculator.",
+      "tags": [
+        "refactoring",
+        "process"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is the test pyramid?",
+      "back": "Many fast unit tests at the bottom, fewer integration tests in the middle (real database, real HTTP layer), and a few end-to-end tests at the top.",
+      "explanation": "End-to-end tests are slow, flaky, and fail for unclear reasons, so they should cover only key user journeys. Integration tests with Testcontainers catch mapping, SQL, and configuration bugs that mocks hide.",
+      "example": "A service might have 800 unit tests (seconds), 120 integration tests (a few minutes), and 10 E2E smoke tests.",
+      "tags": [
+        "testing"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What makes a good unit test?",
+      "back": "It is fast, isolated, deterministic, and checks one behavior through the public API, with a name that says the scenario and expected result. It follows Arrange-Act-Assert (Given-When-Then).",
+      "explanation": "Test behavior, not implementation details, so refactoring doesn't break tests. Avoid real time, randomness, and network: inject Clock and IDs. A test that never fails when you break the code is worse than no test.",
+      "example": "@Test void appliesTenPercentDiscountForOrdersOver100() { var order = orderWithTotal(\"120.00\"); var total = pricing.total(order); assertThat(total).isEqualByComparingTo(\"108.00\"); }",
+      "tags": [
+        "testing",
+        "unit-tests"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "When should you mock, and when shouldn't you?",
+      "back": "Mock things that are slow, nondeterministic, or outside your control (remote APIs, clock, message broker) and roles you own. Don't mock value objects, the class under test, or types you don't own in detail (prefer a thin adapter you can fake).",
+      "explanation": "Over-mocking produces tests that repeat the implementation (verify every call) and pass while production breaks. Prefer asserting on outcomes over verify(); use verify only when the interaction itself is the behavior (an email was sent).",
+      "example": "Mock PaymentGateway in OrderServiceTest; use a real Money and a real in-memory OrderRepository.",
+      "tags": [
+        "testing",
+        "mocking"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is TDD, and what is its real benefit?",
+      "back": "Test-driven development: write a failing test, write the minimum code to pass it, then refactor (red, green, refactor).",
+      "explanation": "The benefit is design feedback and confidence: code written test-first is naturally testable and has small, decoupled units. It's especially useful for business rules and bug fixes: reproduce the bug with a failing test first, then fix it.",
+      "example": "Bug report: discount applied twice. Write a test that fails showing double discount, fix, keep the test forever.",
+      "tags": [
+        "testing",
+        "tdd"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What should you look for when reviewing a pull request, roughly in priority order?",
+      "back": "1) Correctness and edge cases. 2) Design: does it fit, is it in the right place? 3) Tests that would catch regressions. 4) Security, data, and performance risks. 5) Readability and naming. 6) Style nits, ideally left to linters.",
+      "explanation": "Review the description and tests first to understand intent. Ask questions instead of making demands, explain the why, and label minor comments as 'nit'. Approve when it improves the codebase, even if not exactly how you'd write it.",
+      "example": "'This loop calls the repository per item; with 500 items that's 500 queries. Could we batch-load with findAllById?'",
+      "tags": [
+        "code-review",
+        "process"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you make your own pull request easy to review?",
+      "back": "Keep it small and focused, write a description with what, why, and how it was tested, link the ticket, point out risky parts, and self-review the diff before requesting review.",
+      "explanation": "Reviews of 200 lines are thorough; reviews of 2,000 lines get rubber-stamped. Split large work into stacked PRs or ship behind a feature flag in steps.",
+      "example": "Title: 'Retry payment webhook on 5xx'. Body: why (lost webhooks last week), how (Resilience4j retry, 3 attempts), testing (unit + WireMock 503 test), risk (duplicate processing guarded by idempotency key).",
+      "tags": [
+        "code-review",
+        "process"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Which HTTP status codes should a REST API use for common situations?",
+      "back": "200 OK, 201 Created (with Location), 204 No Content. 400 invalid request, 401 not authenticated, 403 authenticated but not allowed, 404 not found, 409 conflict (version or state), 422 validation failed (if your team uses it), 429 rate limited. 500 server bug, 502/503/504 upstream or availability problems.",
+      "explanation": "Return a consistent error body, ideally RFC 9457 Problem Details (application/problem+json), which Spring supports via ProblemDetail. Never return 200 with an error inside the body; clients and monitoring rely on the status.",
+      "example": "{\"type\":\"https://api.acme.com/errors/insufficient-funds\",\"title\":\"Insufficient funds\",\"status\":409,\"detail\":\"Balance 30.00 is less than 50.00\"}",
+      "tags": [
+        "api-design",
+        "http"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Which HTTP methods are safe and which are idempotent?",
+      "back": "Safe (no state change): GET, HEAD, OPTIONS. Idempotent (repeating has the same effect as once): GET, HEAD, OPTIONS, PUT, DELETE. POST is neither; PATCH is not guaranteed to be idempotent.",
+      "explanation": "Clients, proxies, and retry libraries may automatically retry idempotent requests. Never change state on GET. For POSTs that must be safe to retry (payments, orders), require an idempotency key.",
+      "example": "PUT /users/42/email sets the email: repeating it is harmless. POST /orders twice creates two orders unless deduplicated.",
+      "tags": [
+        "api-design",
+        "http",
+        "idempotency"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you evolve a public API without breaking clients?",
+      "back": "Make additive changes only (new optional fields, new endpoints), never rename or remove fields or change their meaning in place, and require clients to ignore unknown fields. For breaking changes, release a new version and deprecate the old one with a timeline.",
+      "explanation": "Versioning options: in the path (/v2/orders), a header, or a media type. Path versioning is the most visible and common. Contract tests (Spring Cloud Contract, Pact) catch accidental breaks between services.",
+      "example": "Add 'displayName' alongside 'name' rather than renaming; mark 'name' deprecated, remove it in v2.",
+      "tags": [
+        "api-design",
+        "versioning"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What are the most common web security mistakes a backend developer should guard against?",
+      "back": "Broken access control (not checking the user owns the resource), injection (SQL, command, LDAP), secrets in code or logs, missing input validation, trusting client data (prices, roles), and vulnerable dependencies.",
+      "explanation": "Broken access control is #1 in the OWASP Top 10: always check authorization on the server for each object (IDOR). Run dependency scanning (OWASP Dependency-Check, Dependabot, Snyk) in CI. Validate input at the boundary with Bean Validation.",
+      "example": "GET /invoices/1234 must verify invoice 1234 belongs to the caller's account, not just that the caller is logged in.",
+      "tags": [
+        "security",
+        "owasp"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Authentication vs authorization, and what is a JWT?",
+      "back": "Authentication proves who you are; authorization decides what you're allowed to do. A JWT is a signed token carrying claims (user ID, roles, expiry) that services can verify without calling the issuer.",
+      "explanation": "JWTs are signed, not encrypted by default: anyone can read the claims, so never put secrets in them. Keep them short-lived because they're hard to revoke, and always validate signature, expiry, issuer, and audience. Spring Security's resource server does this for you.",
+      "example": "Authorization: Bearer eyJhbGciOiJSUzI1NiJ9... with claims {\"sub\":\"user-42\",\"scope\":\"orders:read\",\"exp\":...}",
+      "tags": [
+        "security",
+        "auth"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is technical debt, and how do you argue for paying it down?",
+      "back": "The future cost of shortcuts or outdated design: every change in that area takes longer or breaks more. Argue in business terms: lead time, incident count, and onboarding time, with concrete examples.",
+      "explanation": "Some debt is deliberate and fine (ship now, clean later), if it's tracked. Pay it down incrementally next to feature work in the same area (the 'boy scout rule') rather than asking for a big rewrite.",
+      "example": "'The last three changes to pricing each took a week and caused one incident. Two days to extract PriceCalculator with tests would cut that roughly in half.'",
+      "tags": [
+        "process",
+        "tech-debt"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is an Architecture Decision Record (ADR)?",
+      "back": "A short document recording one significant decision: context, the decision, alternatives considered, and consequences. Stored with the code (docs/adr/0007-use-kafka.md).",
+      "explanation": "It answers 'why is it like this?' years later and stops the same debate from repeating. Keep it to a page; mark old ADRs as superseded rather than editing history.",
+      "example": "ADR-0012: Use PostgreSQL SKIP LOCKED for the job queue instead of RabbitMQ. Context: under 50 jobs/s, one less system to run.",
+      "tags": [
+        "process",
+        "architecture",
+        "documentation"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is the difference between continuous integration, continuous delivery, and continuous deployment?",
+      "back": "CI: everyone merges small changes to main frequently, and each merge is built and tested automatically. Continuous delivery: every passing build is releasable with one click. Continuous deployment: every passing build goes to production automatically.",
+      "explanation": "Long-lived branches defeat CI. A red main build is the team's top priority. Feature flags let you merge unfinished work safely and decouple deploy from release.",
+      "example": "Pipeline: build → unit tests → integration tests → image scan → deploy to staging → smoke test → canary 5% → full rollout.",
+      "tags": [
+        "ci-cd",
+        "process"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What are feature flags good for, and what is their cost?",
+      "back": "They let you deploy code turned off, release to a percentage or a group of users, run experiments, and turn a feature off instantly without a redeploy.",
+      "explanation": "Each flag doubles the code paths to test. Give flags an owner and an expiry, remove them once fully rolled out, and keep flag checks at the edges rather than scattered deep in logic.",
+      "example": "if (flags.isEnabled(\"new-checkout\", user)) return newCheckout(cart); else return legacyCheckout(cart);",
+      "tags": [
+        "ci-cd",
+        "feature-flags"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does semantic versioning (MAJOR.MINOR.PATCH) promise?",
+      "back": "PATCH: backward-compatible bug fixes. MINOR: backward-compatible new features. MAJOR: breaking changes.",
+      "explanation": "It's a promise to consumers of a library or API. In Maven and Gradle, avoid open-ended version ranges in builds; pin versions and let a bot (Dependabot, Renovate) propose upgrades so builds are reproducible.",
+      "example": "Upgrading from 2.3.1 to 2.4.0 should be safe; 2.x to 3.0 needs reading the migration guide.",
+      "tags": [
+        "versioning",
+        "dependencies"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you estimate a task when you're unsure?",
+      "back": "Break it into smaller pieces, estimate each, list unknowns and risks explicitly, and give a range rather than one number. If a big unknown dominates, propose a short timeboxed spike to remove it first.",
+      "explanation": "Estimates are about communication, not accuracy. Update early when you learn the estimate was wrong; surprises at the deadline hurt trust much more than an early 'this is bigger than we thought'.",
+      "example": "'Two to four days. The range depends on whether the partner API supports batch requests; I'll know after a half-day spike.'",
+      "tags": [
+        "process",
+        "estimation"
+      ],
+      "type": "basic"
+    },
+    {
+      "type": "cloze",
+      "text": "The five SOLID principles: {{c1::Single Responsibility}}, {{c2::Open/Closed}}, {{c3::Liskov Substitution}}, {{c4::Interface Segregation}}, {{c5::Dependency Inversion}}.",
+      "extra": "Use them as review vocabulary, not as rules to apply everywhere.",
+      "tags": [
+        "design",
+        "solid"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "401 means {{c1::not authenticated}}; 403 means {{c2::authenticated but not allowed}}.",
+      "extra": "Some APIs return 404 instead of 403 to avoid revealing a resource exists.",
+      "tags": [
+        "api-design",
+        "http",
+        "security"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "PUT and DELETE are {{c1::idempotent}}; POST is not.",
+      "extra": "Retrying an idempotent request has the same effect as sending it once.",
+      "tags": [
+        "api-design",
+        "http"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "The #1 risk in the OWASP Top 10 (2021) is {{c1::broken access control}}.",
+      "extra": "Check object-level ownership on every request.",
+      "tags": [
+        "security",
+        "owasp"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "A unit test is structured as Arrange, {{c1::Act}}, {{c2::Assert}}.",
+      "extra": "Also called Given, When, Then.",
+      "tags": [
+        "testing"
+      ]
+    }
+  ]
+}

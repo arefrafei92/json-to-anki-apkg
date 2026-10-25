@@ -1,0 +1,316 @@
+{
+  "deck": "SQL and Databases at Work",
+  "description": "SQL and relational database knowledge a backend engineer uses weekly: transactions and isolation levels, lost updates, indexes and EXPLAIN, joins and NULL traps, window functions, upserts, job queues with SKIP LOCKED, deadlocks, modeling, and safe schema changes. Examples use PostgreSQL unless noted.",
+  "cards": [
+    {
+      "front": "What does ACID stand for, in one line each?",
+      "back": "Atomicity: all of a transaction's changes happen or none do. Consistency: constraints hold before and after. Isolation: concurrent transactions don't see each other's partial work (to a configured degree). Durability: once committed, data survives a crash.",
+      "explanation": "Isolation is the one with settings and surprises. Most production bugs around 'ACID' are really isolation-level bugs: lost updates and write skew under the default level.",
+      "example": "Transfer money: debit and credit in one transaction, so a crash between them can't lose money.",
+      "tags": [
+        "sql",
+        "transactions"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Name the four standard isolation levels and the default in PostgreSQL and MySQL InnoDB.",
+      "back": "Read Uncommitted, Read Committed, Repeatable Read, Serializable. PostgreSQL defaults to Read Committed; MySQL InnoDB defaults to Repeatable Read.",
+      "explanation": "Higher levels prevent more anomalies but cause more blocking or serialization failures that need retries. PostgreSQL treats Read Uncommitted as Read Committed. Know your database's default before reasoning about race conditions.",
+      "example": "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE; in Spring: @Transactional(isolation = Isolation.SERIALIZABLE)",
+      "tags": [
+        "sql",
+        "transactions",
+        "isolation"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What are dirty reads, non-repeatable reads, and phantom reads?",
+      "back": "Dirty read: seeing another transaction's uncommitted data. Non-repeatable read: reading the same row twice and getting different values because someone committed in between. Phantom read: running the same query twice and getting new or missing rows.",
+      "explanation": "Read Committed prevents dirty reads only. Repeatable Read also prevents non-repeatable reads (and in PostgreSQL, phantoms too). Serializable prevents all anomalies, including write skew.",
+      "example": "Report sums balances, another transaction commits a transfer midway, the same SELECT now returns a different total.",
+      "tags": [
+        "sql",
+        "isolation"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is a lost update, and how do you prevent it?",
+      "back": "Two transactions read the same value, both modify it in application code, and both write back; the second write silently overwrites the first.",
+      "explanation": "Fixes: do the change atomically in SQL (UPDATE ... SET qty = qty - 1), lock the row (SELECT ... FOR UPDATE), or use optimistic locking with a version column and retry. Read Committed does not prevent it.",
+      "example": "Two requests read stock = 5, each subtracts 1 in Java, both write 4. One sale is lost.",
+      "tags": [
+        "sql",
+        "concurrency",
+        "locking"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How does a B-tree index speed up a query, and what does it cost?",
+      "back": "It keeps column values sorted in a balanced tree, so lookups, ranges, and ORDER BY on the indexed columns take O(log n) instead of scanning the table. It costs disk space and slows every INSERT, UPDATE, and DELETE that touches the column.",
+      "explanation": "Index columns used in WHERE, JOIN, and ORDER BY of frequent queries. Don't index everything: unused indexes cost writes and memory. Low-selectivity columns (a boolean) rarely benefit alone.",
+      "example": "CREATE INDEX idx_orders_customer_created ON orders (customer_id, created_at);",
+      "tags": [
+        "sql",
+        "indexes",
+        "performance"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is the leftmost-prefix rule for composite indexes?",
+      "back": "An index on (a, b, c) can serve conditions on a, on a and b, or on a, b, and c, but generally not on b or c alone. Put equality columns first, then the range or sort column.",
+      "explanation": "An index on (customer_id, created_at) serves 'WHERE customer_id = ? ORDER BY created_at DESC LIMIT 20' perfectly: it jumps to the customer and reads rows already in order. Swapping the column order would not.",
+      "example": "WHERE status = 'OPEN' AND created_at > now() - interval '1 day' → index (status, created_at).",
+      "tags": [
+        "sql",
+        "indexes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Which WHERE conditions stop an index from being used?",
+      "back": "Wrapping the column in a function or expression (LOWER(email), DATE(created_at)), a leading wildcard (LIKE '%abc'), implicit type conversion, and OR across different columns without separate indexes.",
+      "explanation": "Rewrite to keep the column bare (created_at >= '2026-10-01' AND created_at < '2026-10-02'), or create an expression index (CREATE INDEX ON users (LOWER(email))). LIKE 'abc%' can use a B-tree index (in PostgreSQL this may need the text_pattern_ops operator class depending on collation).",
+      "example": "WHERE DATE(created_at) = '2026-10-24' scans the table; the range version uses the index.",
+      "tags": [
+        "sql",
+        "indexes",
+        "performance"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is a covering index?",
+      "back": "An index that contains every column a query needs, so the database answers from the index alone without reading the table rows (an 'index-only scan').",
+      "explanation": "PostgreSQL supports INCLUDE to add non-key columns. Useful for hot, narrow queries. Don't overdo it: wide indexes cost writes and memory.",
+      "example": "CREATE INDEX ON orders (customer_id, created_at) INCLUDE (status, total);",
+      "tags": [
+        "sql",
+        "indexes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you read EXPLAIN output for a slow query?",
+      "back": "Look for sequential scans on large tables, row estimates far from actual rows, expensive sorts or hash operations spilling to disk, and nested loops over many rows. EXPLAIN ANALYZE shows actual times and row counts.",
+      "explanation": "EXPLAIN ANALYZE actually executes the query, so wrap data-changing statements in a transaction and roll back. Big estimate errors often mean stale statistics: run ANALYZE on the table. In PostgreSQL add BUFFERS to see I/O.",
+      "example": "EXPLAIN (ANALYZE, BUFFERS) SELECT ... ; → 'Seq Scan on orders (rows=4,000,000)' with a filter on customer_id means a missing index.",
+      "tags": [
+        "sql",
+        "performance",
+        "debugging"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "INNER JOIN vs LEFT JOIN, and what common mistake turns a LEFT JOIN into an INNER JOIN?",
+      "back": "INNER JOIN keeps only rows that match on both sides. LEFT JOIN keeps every left row, with NULLs where there is no match. Filtering the right table in WHERE (WHERE o.status = 'PAID') removes those NULL rows, effectively making it an inner join.",
+      "explanation": "Put the right-table filter in the ON clause to keep unmatched left rows: LEFT JOIN orders o ON o.customer_id = c.id AND o.status = 'PAID'.",
+      "example": "'All customers with their paid order count, including zero' needs the condition in ON plus COUNT(o.id).",
+      "tags": [
+        "sql",
+        "joins"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What surprises come from NULL in SQL?",
+      "back": "NULL means unknown, so NULL = NULL is not true (it's unknown); use IS NULL. NOT IN (subquery) returns no rows if the subquery contains a NULL. COUNT(column) skips NULLs while COUNT(*) counts rows. Aggregates like SUM ignore NULLs.",
+      "explanation": "Prefer NOT EXISTS over NOT IN for anti-joins. COALESCE(col, default) substitutes a value. Unique constraints usually allow many NULLs.",
+      "example": "SELECT * FROM users WHERE id NOT IN (SELECT manager_id FROM teams) returns nothing if any manager_id is NULL.",
+      "tags": [
+        "sql",
+        "null",
+        "pitfall"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "WHERE vs HAVING?",
+      "back": "WHERE filters rows before grouping; HAVING filters groups after aggregation.",
+      "explanation": "Filter as early as possible with WHERE so less data is grouped. You can't use aggregate functions in WHERE.",
+      "example": "SELECT customer_id, COUNT(*) FROM orders WHERE created_at >= '2026-01-01' GROUP BY customer_id HAVING COUNT(*) > 10;",
+      "tags": [
+        "sql",
+        "aggregation"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you get the latest row per group (for example each customer's last order)?",
+      "back": "Use a window function: ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY created_at DESC) in a subquery or CTE, then keep rows where it equals 1.",
+      "explanation": "Window functions compute values across related rows without collapsing them like GROUP BY. Others: RANK, DENSE_RANK, LAG/LEAD (compare with previous row), SUM() OVER (running totals). PostgreSQL also offers DISTINCT ON.",
+      "example": "WITH r AS (SELECT o.*, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY created_at DESC) rn FROM orders o) SELECT * FROM r WHERE rn = 1;",
+      "tags": [
+        "sql",
+        "window-functions"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do prepared statements prevent SQL injection?",
+      "back": "The SQL text and the parameter values are sent separately, so values are never parsed as SQL. Never build SQL by concatenating user input.",
+      "explanation": "JPA named parameters, JdbcTemplate '?' placeholders, and Spring Data derived queries are all safe. Identifiers (column names for sorting) can't be parameters; validate them against an allow-list.",
+      "example": "Unsafe: \"... WHERE name = '\" + name + \"'\". Safe: jdbc.query(\"... WHERE name = ?\", mapper, name).",
+      "tags": [
+        "sql",
+        "security"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you build a simple, safe job queue in PostgreSQL with multiple workers?",
+      "back": "SELECT ... FROM jobs WHERE status = 'READY' ORDER BY id LIMIT 10 FOR UPDATE SKIP LOCKED, inside a transaction. Each worker locks different rows and skips rows another worker already locked.",
+      "explanation": "Without SKIP LOCKED, workers block each other or pick the same job. Mark jobs as done in the same transaction, or move them to IN_PROGRESS with a lease timeout so crashed workers' jobs are retried.",
+      "example": "Works well up to moderate throughput; beyond that, a real broker (Kafka, SQS, RabbitMQ) is a better fit.",
+      "tags": [
+        "sql",
+        "locking",
+        "patterns"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you insert-or-update (upsert) atomically?",
+      "back": "PostgreSQL: INSERT ... ON CONFLICT (unique_cols) DO UPDATE SET ... (or DO NOTHING). MySQL: INSERT ... ON DUPLICATE KEY UPDATE. Both rely on a unique constraint.",
+      "explanation": "'SELECT, then INSERT if missing' in application code races: two requests both see nothing and both insert, causing a duplicate or a constraint error. Let the database decide with a unique constraint.",
+      "example": "INSERT INTO daily_stats(day, views) VALUES (current_date, 1) ON CONFLICT (day) DO UPDATE SET views = daily_stats.views + 1;",
+      "tags": [
+        "sql",
+        "concurrency"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Why do database deadlocks happen, and what should application code do about them?",
+      "back": "Two transactions each hold a row lock the other needs. The database detects the cycle and aborts one with a deadlock error.",
+      "explanation": "Reduce them by touching rows in a consistent order, keeping transactions short, and indexing foreign keys so updates lock fewer rows. Treat deadlock and serialization errors as retryable: retry the whole transaction a few times with backoff.",
+      "example": "Batch updates sorted by primary key deadlock far less than the same updates in random order.",
+      "tags": [
+        "sql",
+        "locking",
+        "deadlock"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Normalization vs denormalization: when do you use each?",
+      "back": "Normalize (store each fact once, link with keys) by default to avoid update anomalies. Denormalize (duplicate or precompute data) deliberately for read-heavy paths where joins or aggregates are too slow.",
+      "explanation": "Every denormalized copy needs a way to stay in sync: a trigger, the same transaction, or an event. Read models, materialized views, and counters on parent rows are common, controlled forms.",
+      "example": "Store order_total on the order row, computed when the order is placed, instead of summing order lines on every list page.",
+      "tags": [
+        "sql",
+        "modeling"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Why should foreign key columns usually be indexed?",
+      "back": "Joins on them become fast, and deleting or updating a parent row needs to find child rows; without an index this scans the child table and can take heavy locks.",
+      "explanation": "PostgreSQL does not create indexes on foreign key columns automatically (it does for primary keys and unique constraints). MySQL InnoDB requires and creates an index for foreign keys.",
+      "example": "CREATE INDEX ON order_items (order_id);",
+      "tags": [
+        "sql",
+        "indexes",
+        "modeling"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How should you store timestamps?",
+      "back": "Store instants in UTC with a timezone-aware type (PostgreSQL timestamptz), and convert to the user's zone only for display. Use java.time.Instant or OffsetDateTime in Java.",
+      "explanation": "Storing local times without a zone breaks around daylight saving changes and across regions. A 'date of birth' or 'store opening hour' is different: those are local dates or times, not instants.",
+      "example": "created_at timestamptz NOT NULL DEFAULT now()",
+      "tags": [
+        "sql",
+        "modeling",
+        "time"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What makes a schema change dangerous on a large production table?",
+      "back": "Operations that rewrite the table or hold a strong lock for a long time: changing a column type, adding a column with a volatile default, building an index without CONCURRENTLY, or adding a constraint that validates all rows at once.",
+      "explanation": "Even a quick DDL statement waits for an exclusive lock, and while it waits it blocks every later query on the table. Set lock_timeout so migrations fail fast instead of freezing traffic. Add constraints as NOT VALID, then VALIDATE separately.",
+      "example": "SET lock_timeout = '3s'; CREATE INDEX CONCURRENTLY idx_users_email ON users (email);",
+      "tags": [
+        "sql",
+        "migrations",
+        "production"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is MVCC, and why do long-running transactions hurt PostgreSQL?",
+      "back": "Multi-Version Concurrency Control: updates create new row versions, so readers don't block writers. Old versions are cleaned up by VACUUM only when no running transaction can still see them.",
+      "explanation": "A transaction left open for hours (an idle session, a stuck batch job) blocks cleanup across the database, causing table and index bloat and slower queries. Monitor pg_stat_activity for 'idle in transaction' and set idle_in_transaction_session_timeout.",
+      "example": "SELECT pid, state, now() - xact_start FROM pg_stat_activity WHERE state = 'idle in transaction';",
+      "tags": [
+        "sql",
+        "postgres",
+        "production"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "UNION vs UNION ALL?",
+      "back": "UNION removes duplicate rows, which requires a sort or hash over the whole result. UNION ALL just concatenates and is faster.",
+      "explanation": "Use UNION ALL unless you actually need deduplication. The same thinking applies to DISTINCT: it is often used to hide a join that multiplies rows, which is better fixed in the join.",
+      "example": "SELECT id FROM active_users UNION ALL SELECT id FROM invited_users;",
+      "tags": [
+        "sql",
+        "performance"
+      ],
+      "type": "basic"
+    },
+    {
+      "type": "cloze",
+      "text": "PostgreSQL's default isolation level is {{c1::Read Committed}}; MySQL InnoDB's is {{c2::Repeatable Read}}.",
+      "extra": "Neither default prevents every anomaly; lost updates need explicit handling.",
+      "tags": [
+        "sql",
+        "isolation"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "An index on (a, b) helps WHERE a = ? but generally not WHERE {{c1::b}} = ? alone.",
+      "extra": "The leftmost-prefix rule.",
+      "tags": [
+        "sql",
+        "indexes"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Use {{c1::IS NULL}}, not = NULL, to test for missing values.",
+      "extra": "Any comparison with NULL yields unknown, which WHERE treats as false.",
+      "tags": [
+        "sql",
+        "null"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Workers can share a job table safely with SELECT ... FOR UPDATE {{c1::SKIP LOCKED}}.",
+      "extra": "Rows locked by another worker are skipped instead of waited on.",
+      "tags": [
+        "sql",
+        "locking"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "EXPLAIN {{c1::ANALYZE}} actually runs the query and reports real times and row counts.",
+      "extra": "Wrap data-changing statements in a transaction and roll back.",
+      "tags": [
+        "sql",
+        "performance"
+      ]
+    }
+  ]
+}

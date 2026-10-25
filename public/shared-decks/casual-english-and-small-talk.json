@@ -1,0 +1,495 @@
+{
+  "deck": "Casual English and Small Talk",
+  "description": "Natural everyday English for life outside meetings: greetings, reactions, invitations and plans, apologies, phrasal verbs, spoken reductions, idioms, and keeping a conversation going with coworkers and friends.",
+  "cards": [
+    {
+      "front": "A friend says 'What's up?' How do you answer naturally?",
+      "back": "'Not much, you?' or 'Not much, just chilling. What about you?'",
+      "explanation": "'What's up?' is a greeting, not a real question about your problems. Don't answer 'I'm fine' (that answers 'How are you?'). Keep it short and bounce it back.",
+      "example": "A: Hey, what's up? B: Not much, just got back from the gym. You?",
+      "tags": [
+        "casual",
+        "greetings"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "You meet someone you haven't seen for a long time. What do you say?",
+      "back": "'Long time no see!' / 'It's been ages!' / 'Hey, how have you been?'",
+      "explanation": "'How have you been?' (present perfect) asks about the whole time since you last met, unlike 'How are you?'. Answer with a short update: 'Good! Busy with work, but good.'",
+      "example": "Oh my God, it's been ages! How have you been?",
+      "tags": [
+        "casual",
+        "greetings"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you ask about someone's weekend and keep the conversation going?",
+      "back": "'How was your weekend? Did you get up to anything fun?' Then follow up on their answer: 'Oh nice, where did you go?'",
+      "explanation": "The skill is the follow-up question. Pick one detail from their answer and ask about it, then share something similar of yours. That back-and-forth is what makes small talk feel natural.",
+      "example": "A: We went hiking. B: Oh nice, where'd you go? A: Up near the lake. B: I've been meaning to go there. Was it busy?",
+      "tags": [
+        "casual",
+        "small-talk"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does 'get up to' mean in 'What did you get up to?'",
+      "back": "It means 'do', usually for free time or something fun or a little naughty.",
+      "explanation": "Very common in British and casual American English. 'What have you been up to?' = 'What have you been doing lately?'.",
+      "example": "What have you been up to lately? / Not much, just work and Netflix, honestly.",
+      "tags": [
+        "casual",
+        "phrasal-verbs"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Natural ways to react when someone shares good news?",
+      "back": "'That's awesome!' / 'No way, congrats!' / 'Good for you!' / 'That's so cool, you must be really happy.'",
+      "explanation": "Native speakers react with energy before asking more. 'No way!' here shows happy surprise, not disbelief. Follow with a question: 'When do you start?'",
+      "example": "A: I got the job! B: No way, congrats! When do you start?",
+      "tags": [
+        "casual",
+        "reactions"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Natural ways to react when someone shares bad news or a problem?",
+      "back": "'Oh no, that sucks.' / 'Ugh, sorry to hear that.' / 'That's rough.' / 'Oh man, I'm sorry.'",
+      "explanation": "'That sucks' is casual and fine with friends and close coworkers, but not with a manager in a formal setting. Then offer support or ask: 'Is there anything I can do?'",
+      "example": "A: My flight got cancelled. B: Oh no, that's rough. Did they rebook you?",
+      "tags": [
+        "casual",
+        "reactions",
+        "empathy"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does 'Tell me about it' usually mean in casual speech?",
+      "back": "'I completely agree; I've experienced the same thing.' It's not a real request for more information.",
+      "explanation": "Said with falling intonation, often with a sigh. The literal meaning ('please tell me more') needs a different tone and is less common.",
+      "example": "A: Mondays are the worst. B: Ugh, tell me about it.",
+      "tags": [
+        "casual",
+        "idioms",
+        "reactions"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Casual ways to agree with someone?",
+      "back": "'Totally.' / 'Same here.' / 'Me too.' / 'I know, right?' / 'Fair enough.'",
+      "explanation": "'Fair enough' means 'that's reasonable, I accept your point', even if you don't fully agree. 'Me neither' agrees with a negative: 'I don't like coffee.' — 'Me neither.'",
+      "example": "A: I'd rather leave early to avoid traffic. B: Fair enough, let's go at four.",
+      "tags": [
+        "casual",
+        "agreeing"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you invite a coworker for lunch or coffee casually?",
+      "back": "'Wanna grab lunch?' / 'Do you want to grab a coffee later?' / 'I'm heading out for lunch, wanna come?'",
+      "explanation": "'Grab' = get something quickly and informally. 'Wanna' is how 'want to' sounds in speech; don't write it in emails.",
+      "example": "Hey, a few of us are grabbing tacos at 12:30. Wanna join?",
+      "tags": [
+        "casual",
+        "invitations"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you say yes to an invitation casually?",
+      "back": "'Sure, sounds good!' / 'I'm down!' / 'Count me in.' / 'Sounds like a plan.'",
+      "explanation": "'I'm down' (= I'm willing) is casual American English, common among younger speakers. 'Count me in' works everywhere.",
+      "example": "A: Drinks after work on Friday? B: I'm down. Where are we going?",
+      "tags": [
+        "casual",
+        "invitations"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you politely decline an invitation without sounding rude?",
+      "back": "'I'd love to, but I can't today. Can I take a rain check?' / 'Ah, I already have plans, but next time for sure.'",
+      "explanation": "Pattern: show interest, give a short reason (no long excuse needed), suggest another time. 'Rain check' = a promise to accept the invitation later.",
+      "example": "Thanks for asking! I've got a thing tonight. Rain check for next week?",
+      "tags": [
+        "casual",
+        "invitations",
+        "politeness"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does 'Let's play it by ear' mean?",
+      "back": "Let's decide later, depending on how things go, instead of making a fixed plan now.",
+      "explanation": "Useful when plans depend on weather, work, or energy. Similar: 'Let's see how it goes.'",
+      "example": "Maybe we'll go to the beach on Sunday, but let's play it by ear. It might rain.",
+      "tags": [
+        "casual",
+        "idioms",
+        "plans"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Someone asks 'Where do you want to eat?' and you don't mind. What do you say?",
+      "back": "'I'm easy, whatever works for you.' / 'I'm not picky, you choose.' / 'It's up to you.'",
+      "explanation": "'I'm easy' here means 'I'm flexible', and it's common in British English. Too many 'I don't mind' answers can sound passive, so sometimes give a small preference: 'Anything but sushi.'",
+      "example": "Honestly I'm easy. Maybe somewhere close, though?",
+      "tags": [
+        "casual",
+        "plans",
+        "preferences"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you talk about likes and dislikes casually?",
+      "back": "'I'm really into ...' / 'I'm a big fan of ...' / 'I'm not really into ...' / '... isn't really my thing.'",
+      "explanation": "'Not really my thing' is a soft, friendly way to say you dislike something without judging people who like it.",
+      "example": "I'm really into bouldering lately. Running isn't really my thing, though.",
+      "tags": [
+        "casual",
+        "preferences"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "You're late meeting a friend. What do you text?",
+      "back": "'Running a bit late, be there in 10!' / 'Sorry, I'm on my way, 5 minutes!'",
+      "explanation": "'Running late' is the natural phrase. 'On my way' = already traveling. Texts often drop the subject: '(I'm) running late'.",
+      "example": "So sorry, traffic's crazy. Running about 15 minutes late.",
+      "tags": [
+        "casual",
+        "texting",
+        "apologies"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Casual ways to apologize for a small mistake?",
+      "back": "'My bad!' / 'Oops, sorry about that.' / 'Sorry, totally my fault.'",
+      "explanation": "'My bad' is very casual, for small things like bumping into someone or forgetting to reply. For a real problem, use a full apology: 'I'm really sorry, I should have checked.'",
+      "example": "A: You sent me the wrong link. B: Oh, my bad! Here's the right one.",
+      "tags": [
+        "casual",
+        "apologies"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Someone thanks you or apologizes. What casual replies can you use?",
+      "back": "'No worries!' / 'No problem.' / 'Don't worry about it.' / 'Anytime!'",
+      "explanation": "'No worries' answers both 'thanks' and 'sorry'. 'Anytime' to a thank-you means you're happy to help again.",
+      "example": "A: Sorry I'm late! B: No worries, I just got here too.",
+      "tags": [
+        "casual",
+        "responses"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you say you're very tired or very busy, casually?",
+      "back": "Tired: 'I'm exhausted.' / 'I'm beat.' / 'I'm wiped out.' Busy: 'I'm swamped.' / 'I've got a lot on my plate.'",
+      "explanation": "'A lot on my plate' = many responsibilities. 'Swamped' works at work too: 'I'm swamped this week, can we talk Monday?'",
+      "example": "I'm totally beat. Long week. I think I'll just order pizza and crash.",
+      "tags": [
+        "casual",
+        "feelings",
+        "vocabulary"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does 'crash' mean in 'I'm going to crash early tonight'?",
+      "back": "Go to sleep, usually because you're very tired. 'Crash at someone's place' = sleep there for a night.",
+      "explanation": "Casual meaning, different from a program crash or car crash. Context makes it clear.",
+      "example": "Can I crash at your place after the concert? The last train is at midnight.",
+      "tags": [
+        "casual",
+        "vocabulary"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What are 'gonna', 'wanna', 'gotta', and 'kinda', and can you write them?",
+      "back": "Spoken reductions of 'going to', 'want to', 'got to / have to', and 'kind of'. Use them in speech and casual texts, not in work emails or documents.",
+      "explanation": "Recognizing them is essential for listening, because native speakers rarely pronounce the full forms. 'Gonna' only replaces 'going to' for the future, not 'going to the store'.",
+      "example": "I'm gonna grab a coffee. Wanna come? I gotta be back by two though.",
+      "tags": [
+        "casual",
+        "pronunciation",
+        "listening"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What filler words do native speakers use to sound natural while thinking?",
+      "back": "'Well...', 'I mean...', 'You know...', 'Let me think...', 'Kind of / sort of', 'Actually...'",
+      "explanation": "A few fillers give you time and sound natural; silence in the middle of a sentence feels more awkward. Don't overuse 'like'; it sounds very young and casual.",
+      "example": "Well, I mean, it was okay, but kind of expensive for what it was.",
+      "tags": [
+        "casual",
+        "fluency"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Which topics are safe for small talk with people you don't know well, and which should you avoid?",
+      "back": "Safe: weekend plans, travel, food, weather, sports, shows and movies, hobbies, pets, the city. Avoid until you know someone well: salary, politics, religion, age, weight or appearance, relationship status.",
+      "explanation": "Rules vary by culture, but in North American and UK workplaces these sensitive topics can make people uncomfortable. Asking about someone's opinion on a neutral topic is a good opener.",
+      "example": "Seen anything good on Netflix lately? I need something new to watch.",
+      "tags": [
+        "casual",
+        "small-talk",
+        "culture"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Natural ways to end a casual conversation and say goodbye?",
+      "back": "'Anyway, I should get going. Great catching up!' / 'Have a good one!' / 'Take care!' / 'See you around!'",
+      "explanation": "'Anyway' signals you're wrapping up. 'Have a good one' works any time of day. Answer 'Have a good weekend' with 'You too!', but 'Thanks, you too!' to 'Enjoy your vacation' only if they're also going on vacation.",
+      "example": "Anyway, I'd better get back to work. Great seeing you! / You too, take care!",
+      "tags": [
+        "casual",
+        "goodbyes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you give a casual compliment?",
+      "back": "'I love your jacket, where'd you get it?' / 'Nice shot!' / 'You nailed that presentation.'",
+      "explanation": "Compliment choices and work (clothes, shoes, work, skills) rather than body or appearance. Adding a question turns it into conversation. Accept compliments with 'Thanks!' rather than rejecting them.",
+      "example": "A: You nailed that demo. B: Thanks! I was so nervous.",
+      "tags": [
+        "casual",
+        "compliments"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "At a restaurant, how do you offer to pay or split the bill?",
+      "back": "Pay: 'It's on me.' / 'My treat.' / 'I've got this.' Split: 'Shall we split it?' / 'Let's go halves.' / 'Can we get separate checks (US) / bills (UK)?'",
+      "explanation": "In US English it's 'the check'; in UK English 'the bill'. 'I'll get the next one' accepts someone's treat politely.",
+      "example": "A: This one's on me. B: Aw, thanks! I'll get the next one.",
+      "tags": [
+        "casual",
+        "restaurants"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you ask 'why' casually, with surprise?",
+      "back": "'How come?' — and note the word order: 'How come you're leaving?' (no question inversion).",
+      "explanation": "'How come' is friendlier and less direct than 'Why?', which can sound like a challenge. After 'how come', use normal statement order.",
+      "example": "How come you didn't come to the party? / How come it's so cheap?",
+      "tags": [
+        "casual",
+        "questions",
+        "grammar"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does 'hang out' mean, and how is it different from 'hang up'?",
+      "back": "'Hang out' = spend relaxed time together. 'Hang up' = end a phone call. 'Hang on' = wait a moment.",
+      "explanation": "Phrasal verbs change meaning completely with the particle. 'Hang on a sec' is very common on calls.",
+      "example": "We should hang out more. / Hang on, I'll check. / Sorry, I have to hang up, my train's here.",
+      "tags": [
+        "casual",
+        "phrasal-verbs"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What do 'catch up' and 'catch up on' mean?",
+      "back": "'Catch up (with someone)' = talk and share news after time apart. 'Catch up on something' = do what you missed (sleep, work, a show).",
+      "explanation": "Also 'catch up' = reach the same level ('I'm behind on this course, I need to catch up').",
+      "example": "Let's grab coffee and catch up. / This weekend I just want to catch up on sleep.",
+      "tags": [
+        "casual",
+        "phrasal-verbs"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does 'figure out' mean?",
+      "back": "Understand or solve something after thinking about it.",
+      "explanation": "Used constantly, at work and casually. Separable: 'figure it out', not 'figure out it'.",
+      "example": "I can't figure out how this coffee machine works. / Don't worry, we'll figure it out.",
+      "tags": [
+        "casual",
+        "phrasal-verbs"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you show you're listening during a conversation (backchannelling)?",
+      "back": "Short sounds and words: 'Mm-hmm.' / 'Yeah.' / 'Right.' / 'Really?' / 'Oh wow.' / 'No way!' / 'Seriously?'",
+      "explanation": "Silence while someone tells a story can feel like you're not interested, especially on calls. 'Seriously?' and 'No way!' show surprise, not doubt.",
+      "example": "A: So the train just stopped in the tunnel... B: No way. A: ...for 45 minutes! B: Seriously?",
+      "tags": [
+        "casual",
+        "listening",
+        "fluency"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What's the difference between 'I'm bored' and 'I'm boring'?",
+      "back": "'I'm bored' = I feel no interest. 'I'm boring' = I make other people feel bored.",
+      "explanation": "-ed adjectives describe how you feel; -ing adjectives describe what causes the feeling: interested/interesting, excited/exciting, tired/tiring, confused/confusing.",
+      "example": "The movie was boring, so I was bored. The talk was interesting; I'm really interested in the topic.",
+      "tags": [
+        "casual",
+        "grammar",
+        "common-mistakes"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Some common American vs British word pairs?",
+      "back": "vacation / holiday, apartment / flat, check / bill, cell phone / mobile, line / queue, fall / autumn, sidewalk / pavement, cookie / biscuit, first floor / ground floor.",
+      "explanation": "Both are understood almost everywhere; just be consistent. 'Cheers' in the UK can mean 'thanks' or 'bye', not only a toast.",
+      "example": "US: I'm on vacation next week. UK: I'm on holiday next week.",
+      "tags": [
+        "casual",
+        "vocabulary",
+        "culture"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you casually say 'I don't know' in different ways?",
+      "back": "'No idea.' / 'Beats me.' / 'Not sure, to be honest.' / 'Good question!' / 'I have no clue.'",
+      "explanation": "'Beats me' and 'no clue' are casual; at work, use 'I'm not sure, let me check'.",
+      "example": "A: Why is the office so cold today? B: Beats me. Maybe the AC is broken.",
+      "tags": [
+        "casual",
+        "phrases"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you ask someone to repeat something casually when you didn't hear?",
+      "back": "'Sorry?' / 'Sorry, what was that?' / 'Come again?' / 'Say that again?'",
+      "explanation": "Rising 'Sorry?' is the most natural. 'What?' alone can sound rude. 'Pardon?' is more formal and a bit old-fashioned in the US.",
+      "example": "Sorry, what was that? It's really loud in here.",
+      "tags": [
+        "casual",
+        "listening"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you politely leave a group conversation at a party or event?",
+      "back": "'I'm going to grab another drink, but it was great talking to you!' / 'I should go say hi to Sam. Nice meeting you!'",
+      "explanation": "Give a light reason and end on something positive. It's normal to move between groups at events; you don't need a big excuse.",
+      "example": "Really nice meeting you, Priya. I'm going to find some food, but let's connect on LinkedIn!",
+      "tags": [
+        "casual",
+        "networking"
+      ],
+      "type": "basic"
+    },
+    {
+      "type": "cloze",
+      "text": "I'm feeling a bit {{c1::under the weather}} today, so I'll stay home.",
+      "extra": "Under the weather = slightly sick.",
+      "tags": [
+        "casual",
+        "idioms"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "It's late and we've done enough. Let's {{c1::call it a day}}.",
+      "extra": "Call it a day = stop working for today. 'Call it a night' in the evening.",
+      "tags": [
+        "casual",
+        "idioms"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "The test was a {{c1::piece of cake}}; I finished in ten minutes.",
+      "extra": "Piece of cake = very easy.",
+      "tags": [
+        "casual",
+        "idioms"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I'm still {{c1::on the fence}} about buying that laptop.",
+      "extra": "On the fence = undecided.",
+      "tags": [
+        "casual",
+        "idioms"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Can I take a {{c1::rain check}}? I'm busy tonight, but I'd love to go another time.",
+      "extra": "Rain check = postponing an invitation you'd like to accept later.",
+      "tags": [
+        "casual",
+        "idioms",
+        "invitations"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I didn't mean to tell her about the surprise. I {{c1::let the cat out of the bag}}.",
+      "extra": "Let the cat out of the bag = reveal a secret by accident.",
+      "tags": [
+        "casual",
+        "idioms"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Sorry, I can't remember his name. It's {{c1::on the tip of my tongue}}.",
+      "extra": "You almost remember it but can't say it yet.",
+      "tags": [
+        "casual",
+        "idioms"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "We should {{c1::hit the road}} before traffic gets bad.",
+      "extra": "Hit the road = leave, start a journey.",
+      "tags": [
+        "casual",
+        "idioms"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Don't worry about the mistake, it's {{c1::no big deal}}.",
+      "extra": "No big deal = not important, not a problem.",
+      "tags": [
+        "casual",
+        "phrases"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "I'll {{c1::swing by}} your place on my way home to drop off the book.",
+      "extra": "Swing by = visit briefly. Similar: drop by, stop by.",
+      "tags": [
+        "casual",
+        "phrasal-verbs"
+      ]
+    }
+  ]
+}

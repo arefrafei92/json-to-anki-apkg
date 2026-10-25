@@ -1,10 +1,9 @@
 export const deckCategories = [
-  "Java engineering",
-  "Performance and production",
-  "Tools and delivery",
-  "Architecture and interviews",
-  "English at work",
-  "Samples",
+  "Java",
+  "Software engineering",
+  "System design and coding",
+  "Production and performance",
+  "English communication",
 ] as const;
 
 export type DeckCategory = (typeof deckCategories)[number];
@@ -20,25 +19,37 @@ export type SharedDeck = {
   topics: string[];
 };
 
+const file = (id: string) => `/shared-decks/${id}.json`;
+
 /** Decks served from public/shared-decks/. Add a JSON file there, then a row here. */
 export const sharedDecks: readonly SharedDeck[] = [
   {
-    id: "java-11-17-junior-to-mid",
-    title: "Java 11 and 17 — Junior to Mid",
+    id: "modern-java-junior-to-mid",
+    title: "Modern Java — Junior to Mid",
     description:
-      "Core Java plus what actually shipped by the 17 LTS: var, HTTP client, switch expressions, text blocks, records, instanceof patterns, and sealed classes.",
-    category: "Java engineering",
-    file: "/shared-decks/java-11-17-junior-to-mid.json",
+      "Equality and hashing, collections, generics, exceptions, streams and collectors, Optional, records, sealed types, and pattern matching up to Java 21.",
+    category: "Java",
+    file: file("modern-java-junior-to-mid"),
     cards: 43,
-    topics: ["Java 11", "Java 17", "JVM", "Concurrency"],
+    topics: ["Core Java", "Java 17", "Java 21", "Streams"],
+  },
+  {
+    id: "java-concurrency",
+    title: "Java Concurrency in Practice",
+    description:
+      "Memory model, locks and atomics, thread pools and their traps, CompletableFuture, virtual threads, deadlocks, and testing async code.",
+    category: "Java",
+    file: file("java-concurrency"),
+    cards: 35,
+    topics: ["Threads", "Executors", "CompletableFuture", "Virtual threads"],
   },
   {
     id: "jvm-memory-and-debugging",
     title: "JVM Memory and Debugging",
     description:
       "Heap, metaspace, GC logs, heap and thread dumps, JFR, and how to chase an OutOfMemoryError or a stuck service step by step.",
-    category: "Java engineering",
-    file: "/shared-decks/jvm-memory-and-debugging.json",
+    category: "Java",
+    file: file("jvm-memory-and-debugging"),
     cards: 35,
     topics: ["Heap", "GC", "Heap dumps", "jcmd", "JFR"],
   },
@@ -46,19 +57,79 @@ export const sharedDecks: readonly SharedDeck[] = [
     id: "spring-boot-and-jpa-at-work",
     title: "Spring Boot and JPA at Work",
     description:
-      "Beans and proxies, transactions, N+1 queries, lazy loading, connection pools, and the mistakes that show up in code review.",
-    category: "Java engineering",
-    file: "/shared-decks/spring-boot-and-jpa-at-work.json",
+      "Beans and proxies, transactions, N+1 queries, lazy loading, connection pools, locking, and the mistakes that show up in code review.",
+    category: "Java",
+    file: file("spring-boot-and-jpa-at-work"),
     cards: 35,
     topics: ["Spring", "Transactions", "JPA", "Hibernate"],
+  },
+  {
+    id: "software-engineering-fundamentals",
+    title: "Software Engineering Fundamentals",
+    description:
+      "SOLID, design patterns, clean code and refactoring, testing strategy, code review, REST API design, security basics, and CI/CD.",
+    category: "Software engineering",
+    file: file("software-engineering-fundamentals"),
+    cards: 36,
+    topics: ["Design", "Testing", "APIs", "Security"],
+  },
+  {
+    id: "sql-and-databases",
+    title: "SQL and Databases at Work",
+    description:
+      "Transactions and isolation, indexes and EXPLAIN, joins and NULL traps, window functions, upserts, locking, and safe schema changes.",
+    category: "Software engineering",
+    file: file("sql-and-databases"),
+    cards: 28,
+    topics: ["SQL", "PostgreSQL", "Indexes", "Transactions"],
+  },
+  {
+    id: "git-commands-and-situations",
+    title: "Git — Commands and Situations",
+    description:
+      "Merge, rebase, amend, reset, revert, cherry-pick, conflicts, reflog recovery, and the team etiquette around force-pushing.",
+    category: "Software engineering",
+    file: file("git-commands-and-situations"),
+    cards: 41,
+    topics: ["Rebase", "Reset", "Reflog", "Conflicts"],
+  },
+  {
+    id: "docker-and-containers",
+    title: "Docker and Containers",
+    description:
+      "Images, layers, Dockerfiles for Java, networking, volumes, JVM memory inside a container, and debugging a container that will not start.",
+    category: "Software engineering",
+    file: file("docker-and-containers"),
+    cards: 34,
+    topics: ["Dockerfile", "Compose", "JVM in containers", "Debugging"],
+  },
+  {
+    id: "system-design-fundamentals",
+    title: "System Design Fundamentals",
+    description:
+      "Estimation, scaling, caching, databases, replication, sharding, consistency, messaging, idempotency, sagas, and classic designs.",
+    category: "System design and coding",
+    file: file("system-design-fundamentals"),
+    cards: 42,
+    topics: ["Scaling", "Consistency", "Kafka", "Estimation"],
+  },
+  {
+    id: "coding-interview-patterns",
+    title: "Coding Interview Patterns (DSA)",
+    description:
+      "Complexity, hash maps, two pointers, sliding window, heaps, intervals, binary search, graphs, backtracking, and DP, with Java tips.",
+    category: "System design and coding",
+    file: file("coding-interview-patterns"),
+    cards: 41,
+    topics: ["Algorithms", "Data structures", "Graphs", "DP"],
   },
   {
     id: "caching-in-java-services",
     title: "Caching in Java Services",
     description:
       "Caffeine and Redis, Spring @Cacheable traps, TTL versus invalidation, stampedes, hot keys, and how to prove a cache helps.",
-    category: "Performance and production",
-    file: "/shared-decks/caching-in-java-services.json",
+    category: "Production and performance",
+    file: file("caching-in-java-services"),
     cards: 30,
     topics: ["Caffeine", "Redis", "Spring Cache", "Invalidation"],
   },
@@ -67,68 +138,39 @@ export const sharedDecks: readonly SharedDeck[] = [
     title: "Observability and Incidents",
     description:
       "Logs, metrics, traces, percentiles, alerts that page for the right reason, and a calm playbook for a production incident.",
-    category: "Performance and production",
-    file: "/shared-decks/observability-and-incidents.json",
+    category: "Production and performance",
+    file: file("observability-and-incidents"),
     cards: 30,
     topics: ["Logging", "Metrics", "Tracing", "On-call"],
   },
   {
-    id: "docker-and-containers",
-    title: "Docker and Containers",
+    id: "professional-english-at-work",
+    title: "Professional English at Work",
     description:
-      "Images, layers, Dockerfiles for Java, networking, volumes, JVM memory inside a container, and debugging a container that will not start.",
-    category: "Tools and delivery",
-    file: "/shared-decks/docker-and-containers.json",
-    cards: 34,
-    topics: ["Docker", "Dockerfile", "JVM in containers", "Compose"],
+      "Meetings, standups, Slack, email, code review, demos, feedback, and interviews — answer each situation out loud, then flip.",
+    category: "English communication",
+    file: file("professional-english-at-work"),
+    cards: 113,
+    topics: ["Meetings", "Email", "Code review", "Collocations"],
   },
   {
-    id: "git-commands-and-situations",
-    title: "Git — Commands and Situations",
+    id: "casual-english-and-small-talk",
+    title: "Casual English and Small Talk",
     description:
-      "Merge, rebase, amend, reset, revert, cherry-pick, conflicts, and recovering a mistake from the reflog.",
-    category: "Tools and delivery",
-    file: "/shared-decks/git-commands-and-situations.json",
-    cards: 37,
-    topics: ["Merge", "Rebase", "Amend", "Recovery"],
+      "Greetings, reactions, invitations, plans, phrasal verbs, spoken reductions, and idioms for natural everyday conversation.",
+    category: "English communication",
+    file: file("casual-english-and-small-talk"),
+    cards: 45,
+    topics: ["Small talk", "Phrasal verbs", "Idioms", "Reactions"],
   },
   {
-    id: "system-design-and-dsa",
-    title: "System Design and DSA — Junior to Mid",
+    id: "english-grammar-for-work",
+    title: "English Grammar That Matters",
     description:
-      "Complexity and interview patterns, then caching, indexes, sharding, consistent hashing, CAP, and queues.",
-    category: "Architecture and interviews",
-    file: "/shared-decks/system-design-and-dsa.json",
-    cards: 39,
-    topics: ["DSA", "Databases", "CAP", "Caching"],
-  },
-  {
-    id: "english-at-work-java",
-    title: "English at Work — Java Developer",
-    description:
-      "Small talk, meetings, grammar, standup, Slack, and Java conversations for day-to-day fluency.",
-    category: "English at work",
-    file: "/shared-decks/english-at-work-java.json",
-    cards: 122,
-    topics: ["Small talk", "Meetings", "Grammar", "Java"],
-  },
-  {
-    id: "workplace-english-intermediate",
-    title: "Workplace English — Intermediate",
-    description:
-      "Short set of practical phrases for updates, meetings, and common workplace collocations.",
-    category: "English at work",
-    file: "/shared-decks/workplace-english-intermediate.json",
-    cards: 20,
-    topics: ["Meetings", "Phrases"],
-  },
-  {
-    id: "sample-vocabulary",
-    title: "Sample vocabulary",
-    description: "A few cards to try paste, validate, and download.",
-    category: "Samples",
-    file: "/shared-decks/sample-deck.json",
-    cards: 3,
-    topics: ["Sample"],
+      "Tenses, articles, uncountable nouns, gerunds vs infinitives, question word order, conditionals, prepositions, and common mistakes.",
+    category: "English communication",
+    file: file("english-grammar-for-work"),
+    cards: 57,
+    topics: ["Tenses", "Articles", "Word order", "Common mistakes"],
   },
 ];

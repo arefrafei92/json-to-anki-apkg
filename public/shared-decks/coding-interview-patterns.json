@@ -1,0 +1,463 @@
+{
+  "deck": "Coding Interview Patterns (DSA)",
+  "description": "Data structures and algorithm patterns for coding interviews and everyday problem solving: complexity, hash maps, two pointers, sliding window, prefix sums, stacks, heaps, intervals, binary search, graphs, backtracking, and dynamic programming, with Java-specific tips.",
+  "cards": [
+    {
+      "type": "basic",
+      "front": "What does O(n) actually claim, and what does it ignore?",
+      "back": "As the input size n grows, the dominant work grows in proportion to n. Constants, lower-order terms, and hardware are dropped.",
+      "explanation": "O(n) can be slower than O(n^2) for small n if the constant is huge. Big O is an upper bound used loosely in interviews to mean the tight typical bound. Always say what n is: nodes, characters, or bits. Space complexity counts extra memory, not the input itself, unless you say otherwise. Amortized O(1), as in dynamic array append, means the average over a sequence of operations, not every single call.",
+      "example": "Appending to an ArrayList is usually O(1) and occasionally O(n) when the buffer doubles. Across n appends the total copying is O(n), so each append is amortized O(1).",
+      "tags": [
+        "complexity",
+        "dsa"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "What are the time costs that matter for an array versus a linked list?",
+      "back": "An array gets index i in O(1) and inserts in the middle in O(n) because elements shift. A linked list gets index i in O(n) and can insert in O(1) if you already hold the node.",
+      "explanation": "Arrays are contiguous, so scanning them is fast in hardware caches. Linked lists scatter nodes and use extra memory per pointer. Interview code almost always wants an array or ArrayList unless the problem is specifically about node splicing. Know both so you can say why you rejected the other.",
+      "example": "Deleting the middle of an array of 1 million ints copies about half a million elements. Deleting a linked-list node is a pointer rewrite once you have found it.",
+      "tags": [
+        "dsa",
+        "structures"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "Why is a hash map O(1) on average and O(n) in the worst case?",
+      "back": "The hash picks a bucket in O(1). If every key lands in one bucket, lookup walks n entries. With a decent hash and resizing, chains stay short, so average lookup is O(1).",
+      "explanation": "Expected time assumes a uniform hash and a load factor that triggers growth. Worst case is adversarial keys or a terrible hashCode. Java's HashMap treeifies long chains, which caps the worst case closer to O(log n) for comparable keys. Still say 'average O(1)' in interviews and mention the collision case. Hash maps do not keep order. If you need sorted keys, use a tree map and accept O(log n).",
+      "example": "Two Sum: one pass, store value to index. Complement lookup is average O(1). Total average O(n), extra space O(n).",
+      "tags": [
+        "dsa",
+        "hashmap"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "When is the two-pointer pattern the right tool?",
+      "back": "When the input is sorted, or when you can move inward from both ends, or when one pointer advances and the other only moves forward. You want O(n) instead of O(n^2) pairs.",
+      "explanation": "Classic uses: pair sum in a sorted array, palindrome check, partitioning, and removing duplicates in place. The invariant is the sentence you should say out loud: everything left of i is processed. If a pointer can move backward arbitrarily, it is no longer linear. Sorting first costs O(n log n) and only pays off if the later scan is linear and you may reorder.",
+      "example": "Sorted array, target sum: if sum is too small, move left++; if too big, move right--. Each step discards an index forever.",
+      "tags": [
+        "dsa",
+        "patterns"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "What is a sliding window, and how do you know it is not just two pointers?",
+      "back": "A window is a contiguous subarray or substring. You expand the right edge and shrink the left edge to keep a constraint, such as 'at most k distinct characters'.",
+      "explanation": "The window never restarts from scratch, so each index enters and leaves at most once: O(n). Use it for longest substring without repeating characters, minimum window that covers a pattern, and max sum of a subarray of size k. If the constraint is not about a contiguous range, a window is the wrong picture. Draw the left and right bounds on paper before coding.",
+      "example": "Longest substring without repeats: move right, and while the new char is already inside, move left past its previous index.",
+      "tags": [
+        "dsa",
+        "patterns"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "What invariant makes binary search correct?",
+      "back": "A range [lo, hi) where the answer, if it exists, is still inside. Each step cuts the range in half by testing the middle.",
+      "explanation": "Off-by-one bugs come from mixing inclusive and exclusive ends, or from computing mid as (lo+hi)/2 and overflowing. Prefer lo + (hi-lo)/2. The loop must shrink the range every time or it never ends. Binary search is not only for sorted arrays. It works on any monotonic predicate: 'is capacity x enough to ship in d days?'. That form is what mid-level interviews want.",
+      "example": "while (lo < hi) { int mid = lo + (hi - lo) / 2; if (ok(mid)) hi = mid; else lo = mid + 1; }",
+      "tags": [
+        "dsa",
+        "binary-search"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "When do you choose BFS over DFS?",
+      "back": "BFS for the shortest path in an unweighted graph, and for exploring level by level. DFS for exhausting paths, detecting cycles in a directed graph with colors, and for topological sorts via finishing times.",
+      "explanation": "BFS uses a queue and O(n) memory in a wide graph. DFS uses a stack, or recursion, and can overflow on a long chain. Both are O(n + m) on an adjacency list, where n is vertices and m is edges. On an adjacency matrix they are O(n^2). Shortest path with weights needs Dijkstra, not BFS. Say that distinction. It is a common mid-level follow-up.",
+      "example": "Word ladder, minimum transformations: each word is a node, each one-letter change is an edge, BFS finds the fewest edges.",
+      "tags": [
+        "dsa",
+        "graphs"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "What does a heap give you that a sorted array does not?",
+      "back": "A binary heap finds the min (or max) in O(1) and inserts or removes it in O(log n). It does not keep the rest sorted.",
+      "explanation": "Use a heap for top-k, merging k sorted lists, and scheduling by priority. Building a heap from n items is O(n), not O(n log n). A sorted array is better when you will query many order statistics and rarely update. In Java, PriorityQueue is a min-heap. For a max-heap, reverse the comparator. Heap sort is O(n log n) and not stable.",
+      "example": "Stream of numbers, running median, or 'k largest': a min-heap of size k. The root is the smallest of the large ones, which is the kth largest.",
+      "tags": [
+        "dsa",
+        "heap"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "What is a stable sort, and why would a product care?",
+      "back": "A stable sort keeps the original order of elements that compare equal. An unstable sort may swap them.",
+      "explanation": "Sort by last name, then stable-sort by city, and people in the same city stay in last-name order. Java's Collections.sort and List.sort are stable. Primitive Arrays.sort is not required to be stable. If you sort twice with an unstable algorithm, the first key can be scrambled. The cost of stability is usually extra memory or a different algorithm such as mergesort instead of quicksort.",
+      "example": "Orders already sorted by id, then sorted stably by status, keep id order inside each status.",
+      "tags": [
+        "dsa",
+        "sorting"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "How do you recognize a dynamic-programming problem?",
+      "back": "The same subproblem appears many times, and an optimal solution is built from optimal solutions of smaller subproblems. You can define a state and a transition.",
+      "explanation": "If subproblems do not overlap, divide and conquer or a plain recursion is enough and memoization only costs memory. State the state in one sentence: dp[i] is the best cost using the first i items. If you cannot name the state, you are not ready to code. Bottom-up avoids recursion depth. Top-down with a memo map is easier to write first. Many 'DP' interview problems are just shortest paths or knapsack in disguise.",
+      "example": "Climbing stairs: ways(n) = ways(n-1) + ways(n-2), with ways(1) and ways(2) as bases. Without a memo, the recursion tree is exponential.",
+      "tags": [
+        "dsa",
+        "dp"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "How do you detect a cycle in a linked list using O(1) extra memory?",
+      "back": "Floyd's algorithm: a slow pointer moves one step, a fast pointer moves two. If there is a cycle they meet. If fast hits null, there is no cycle.",
+      "explanation": "A hash set of seen nodes also works in O(n) time and O(n) memory. The two-pointer version is the expected follow-up. To find the start of the cycle, reset one pointer to the head and move both one step at a time. They meet at the entrance. This is a favorite because it tests invariants, not syntax.",
+      "example": "while (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; if (slow == fast) return true; }",
+      "tags": [
+        "dsa",
+        "linked-list"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "What is the difference between a stack and a queue in problem solving?",
+      "back": "A stack is last-in first-out: nested structure, undo, DFS, valid parentheses. A queue is first-in first-out: BFS, task scheduling, sliding windows that expire in order.",
+      "explanation": "Recursion is an implicit stack. If the depth can be n = 10^5, rewrite it with your own stack or you will blow the call stack. A deque gives you both ends and is the right structure for a sliding-window maximum. Name the structure and the reason before you write the loop.",
+      "example": "Matching brackets: push opening, and on a closing bracket pop and check. A queue cannot express 'the most recent unmatched opener'.",
+      "tags": [
+        "dsa",
+        "structures"
+      ]
+    },
+    {
+      "type": "basic",
+      "front": "Inorder traversal of a binary search tree produces what, and what does the BST property actually say?",
+      "back": "Inorder (left, node, right) yields keys in sorted order. The property: every key in the left subtree is less than the node, and every key in the right subtree is greater.",
+      "explanation": "The property must hold for the whole subtree, not only the parent and its two children. A tree can satisfy the parent check locally and still be an invalid BST. Search is O(height). A balanced tree keeps height O(log n). A stick-shaped tree is O(n). That is why companies use red-black trees or skip lists rather than a naive BST for TreeMap.",
+      "example": "Validate a BST by passing an allowed (min, max) window down the recursion, not by comparing only node.left and node.right.",
+      "tags": [
+        "dsa",
+        "trees"
+      ]
+    },
+    {
+      "front": "What is the step-by-step way to approach a coding problem in an interview?",
+      "back": "1) Restate the problem and ask about input size, ranges, duplicates, and empty input. 2) Work a small example by hand. 3) Say the brute force and its complexity. 4) Find the bottleneck and pick a pattern to remove it. 5) Code it. 6) Trace your example and edge cases through the code.",
+      "explanation": "Interviewers grade communication and process as much as the final code. A correct brute force with a clear plan beats a silent, half-finished clever solution. Input size hints at the target: n up to 10^5 usually means O(n log n) or better; n up to 20 allows exponential search.",
+      "example": "'Brute force checks every pair, O(n^2). Since we only need the complement of each number, a hash map makes it one pass, O(n) time and O(n) space.'",
+      "tags": [
+        "dsa",
+        "interviews",
+        "process"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Which edge cases should you test before saying 'done' on a coding problem?",
+      "back": "Empty input, one element, all equal elements, duplicates, negative numbers and zero, already sorted or reverse sorted input, very large values (integer overflow), and the first and last positions.",
+      "explanation": "Most bugs live at boundaries: off-by-one in loops, empty collections, and overflow. In Java, int overflows silently past 2,147,483,647; use long for sums and products of large ints.",
+      "example": "Binary search midpoint: int mid = lo + (hi - lo) / 2; avoids the overflow that (lo + hi) / 2 can cause.",
+      "tags": [
+        "dsa",
+        "edge-cases",
+        "java"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How does a hash map solve 'two sum' and many counting problems in one pass?",
+      "back": "Store what you've seen (value → index, or value → count). For each new element, look up its complement or update its count in O(1) average time, turning an O(n^2) pair search into O(n).",
+      "explanation": "Recognize it when the problem asks 'does a matching element exist', 'count occurrences', 'find duplicates', or 'group by a key' (anagrams grouped by sorted letters). The cost is O(n) extra memory.",
+      "example": "Map<Integer,Integer> seen = new HashMap<>(); for (int i = 0; i < a.length; i++) { Integer j = seen.get(target - a[i]); if (j != null) return new int[]{j, i}; seen.put(a[i], i); }",
+      "tags": [
+        "dsa",
+        "hashmap",
+        "patterns"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is a prefix sum, and which problems does it make fast?",
+      "back": "An array where prefix[i] is the sum of the first i elements. Any range sum becomes prefix[r + 1] - prefix[l] in O(1) after O(n) setup.",
+      "explanation": "Combined with a hash map of prefix sums seen so far, it counts subarrays that sum to k in O(n), even with negative numbers, where a sliding window would fail. The same idea works for 2D grids and running counts.",
+      "example": "Subarray sum equals k: count += seen.getOrDefault(sum - k, 0); seen.merge(sum, 1, Integer::sum);",
+      "tags": [
+        "dsa",
+        "prefix-sum",
+        "patterns"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is a monotonic stack, and what does it solve?",
+      "back": "A stack kept in increasing or decreasing order. When a new element breaks the order, you pop elements, and each popped element has found its 'next greater' (or smaller) element. Every element is pushed and popped once, so it is O(n).",
+      "explanation": "Typical problems: next greater element, daily temperatures, largest rectangle in a histogram, stock span. Keyword: 'for each element, find the nearest element to the left or right that is bigger or smaller'.",
+      "example": "Daily temperatures: push indices; while temps[i] > temps[stack.peek()], pop j and set answer[j] = i - j.",
+      "tags": [
+        "dsa",
+        "stack",
+        "patterns"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you find the top K elements efficiently?",
+      "back": "Keep a min-heap of size K: push each element and pop when the size exceeds K. The heap then holds the K largest. Time O(n log K), space O(K).",
+      "explanation": "Sorting everything costs O(n log n) and needs all data in memory; the heap works on streams. For 'K most frequent', count with a hash map first, then heap by count. Quickselect gives average O(n) but is harder to get right.",
+      "example": "PriorityQueue<Integer> pq = new PriorityQueue<>(); for (int x : nums) { pq.offer(x); if (pq.size() > k) pq.poll(); }",
+      "tags": [
+        "dsa",
+        "heap",
+        "patterns"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you solve interval problems such as merging overlapping meetings?",
+      "back": "Sort intervals by start time, then sweep: if the next interval starts before the current one ends, extend the end; otherwise start a new interval. O(n log n) for the sort.",
+      "explanation": "Variants: insert an interval, count meeting rooms needed (sort starts and ends separately, or use a min-heap of end times), and find free time. The key insight is almost always sorting by start or by end.",
+      "example": "[[1,3],[2,6],[8,10]] → [[1,6],[8,10]].",
+      "tags": [
+        "dsa",
+        "intervals",
+        "patterns"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is backtracking and how do you structure it?",
+      "back": "Build a solution step by step: choose an option, recurse, then undo the choice. Prune branches that can't lead to a valid answer. Used for subsets, permutations, combinations, N-Queens, and word search.",
+      "explanation": "Template: if (complete) record a copy; for each choice: if valid, apply, recurse, undo. Remember to add a copy of the current list (new ArrayList<>(path)), not the list itself. Complexity is exponential, so pruning matters.",
+      "example": "Subsets: backtrack(i): for (j = i; j < n; j++) { path.add(a[j]); backtrack(j + 1); path.remove(path.size() - 1); }",
+      "tags": [
+        "dsa",
+        "backtracking",
+        "recursion"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Memoization vs tabulation in dynamic programming?",
+      "back": "Memoization is top-down: write the recursion and cache results by state. Tabulation is bottom-up: fill a table from the smallest subproblems in a loop.",
+      "explanation": "Memoization is easier to derive from a recursive definition and only computes states it needs, but deep recursion can overflow the stack. Tabulation avoids recursion and often allows reducing memory to the last row or two values.",
+      "example": "Climbing stairs: ways(n) = ways(n-1) + ways(n-2). Tabulated with two variables, it is O(n) time and O(1) space.",
+      "tags": [
+        "dsa",
+        "dp"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "When is a greedy algorithm correct?",
+      "back": "When making the locally best choice never prevents an optimal overall solution. You justify it with an exchange argument: any optimal solution can be changed step by step into the greedy one without getting worse.",
+      "explanation": "Classic correct greedy: pick meetings by earliest end time to fit the most meetings. Classic wrong greedy: coin change with arbitrary coins (coins 1, 3, 4 for amount 6: greedy gives 4+1+1, optimal is 3+3), which needs DP.",
+      "example": "If you can't explain why greedy is safe, try a small counterexample before committing to it.",
+      "tags": [
+        "dsa",
+        "greedy"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is topological sort, and how does Kahn's algorithm work?",
+      "back": "An ordering of a directed acyclic graph where every edge goes from earlier to later. Kahn's algorithm: count incoming edges, start with all nodes of in-degree 0, repeatedly remove one and decrease its neighbors' in-degrees, adding new zeros to the queue.",
+      "explanation": "If the result has fewer nodes than the graph, there is a cycle. Real uses: build systems and task dependencies, course prerequisites, database migration ordering, Spring bean initialization order.",
+      "example": "Course schedule: can you finish all courses? Run Kahn's algorithm and check processed == numCourses. O(V + E).",
+      "tags": [
+        "dsa",
+        "graphs",
+        "topological-sort"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is Union-Find (disjoint set union), and when do you use it?",
+      "back": "A structure that tracks which elements are in the same group with two operations: find(x) returns the group's root, union(a, b) merges two groups. With path compression and union by rank, each operation is nearly constant time (inverse Ackermann).",
+      "explanation": "Use it for dynamic connectivity: number of connected components, detecting a cycle in an undirected graph, Kruskal's minimum spanning tree, and merging accounts that share an email.",
+      "example": "int find(int x) { return parent[x] == x ? x : (parent[x] = find(parent[x])); }",
+      "tags": [
+        "dsa",
+        "graphs",
+        "union-find"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "When does Dijkstra's algorithm work, and what is its complexity?",
+      "back": "It finds shortest paths from one source when all edge weights are non-negative. With a binary heap (PriorityQueue), it runs in O((V + E) log V).",
+      "explanation": "Negative edges break it because a node's distance may improve after it was finalized; use Bellman-Ford then. With equal weights, plain BFS is simpler and O(V + E). In Java, skip stale heap entries (if d > dist[u] continue) instead of decreasing keys.",
+      "example": "Network delay time: Dijkstra from the source, answer = max distance, or -1 if any node is unreachable.",
+      "tags": [
+        "dsa",
+        "graphs",
+        "shortest-path"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you treat a 2D grid as a graph?",
+      "back": "Each cell is a node and its 4 (or 8) neighbors are edges. Run BFS or DFS with a direction array, check bounds, and mark visited cells so you don't loop.",
+      "explanation": "Number of islands = count DFS/BFS starts. Shortest path in a maze or 'rotting oranges' = BFS by levels (multi-source BFS when many cells start at once). Marking visited when you enqueue, not when you dequeue, avoids adding a cell many times.",
+      "example": "int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}}; for (int[] d : dirs) { int r = row + d[0], c = col + d[1]; if (r >= 0 && r < m && c >= 0 && c < n && grid[r][c] == '1') ... }",
+      "tags": [
+        "dsa",
+        "graphs",
+        "grid"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What is a trie, and when does it beat a hash set?",
+      "back": "A tree where each edge is a character, so all words with a common prefix share a path. Insert and lookup cost O(L) for word length L, and 'all words starting with prefix' is a walk down the tree.",
+      "explanation": "A hash set answers 'is this exact word present?' but not prefix questions. Tries power autocomplete, spell check, and word-search problems on a board. Memory use can be high; a map of children saves memory over a 26-slot array for sparse alphabets.",
+      "example": "class Node { Node[] next = new Node[26]; boolean end; }",
+      "tags": [
+        "dsa",
+        "trie",
+        "strings"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does 'binary search on the answer' mean?",
+      "back": "When the answer is a number in a range and a check 'is X good enough?' is monotonic, binary search over X instead of over an array.",
+      "explanation": "Typical problems: minimum ship capacity to deliver packages in D days, Koko eating bananas, smallest maximum after splitting an array. Each check is O(n), so total time is O(n log range).",
+      "example": "lo = max(weights), hi = sum(weights); while (lo < hi) { mid = lo + (hi - lo) / 2; if (canShip(mid)) hi = mid; else lo = mid + 1; }",
+      "tags": [
+        "dsa",
+        "binary-search",
+        "patterns"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "How do you design an LRU cache with O(1) get and put?",
+      "back": "A hash map from key to node plus a doubly linked list ordered by recency. Get moves the node to the front; put inserts at the front and evicts from the tail when over capacity.",
+      "explanation": "In Java, LinkedHashMap with accessOrder = true and removeEldestEntry overridden gives you an LRU in a few lines; interviewers often ask for the manual version too. It is not thread-safe; production code uses Caffeine.",
+      "example": "new LinkedHashMap<K,V>(16, 0.75f, true) { protected boolean removeEldestEntry(Map.Entry<K,V> e) { return size() > capacity; } };",
+      "tags": [
+        "dsa",
+        "design",
+        "linked-list",
+        "hashmap"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "What does space complexity include that people forget?",
+      "back": "The recursion call stack, plus any copies created (substrings, new arrays, sorted copies). A recursive DFS on a path-shaped tree uses O(n) stack even with no extra data structures.",
+      "explanation": "In Java, deep recursion (tens of thousands of frames) can throw StackOverflowError with the default thread stack size (often 1 MB on 64-bit systems). Convert to an explicit stack (ArrayDeque) when depth can be large.",
+      "example": "DFS on a linked-list-shaped tree with 100,000 nodes: recursive version may crash; iterative version with Deque<Node> does not.",
+      "tags": [
+        "dsa",
+        "complexity",
+        "recursion"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Why is ArrayList.add amortized O(1) even though it sometimes copies the whole array?",
+      "back": "When full, it grows the backing array by a constant factor (about 1.5× in OpenJDK) and copies. Copies happen rarely enough that the total cost over n adds is O(n), so each add averages O(1).",
+      "explanation": "Amortized cost is the average over a sequence, not a guarantee for each call. If you know the size up front, new ArrayList<>(expectedSize) avoids the copies.",
+      "example": "Adding 1 million items to new ArrayList<>(1_000_000) does no resizing.",
+      "tags": [
+        "dsa",
+        "complexity",
+        "java"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Which Java classes should you use for stacks, queues, and heaps in coding problems?",
+      "back": "ArrayDeque for both stacks (push/pop) and queues (offer/poll). PriorityQueue for heaps; it is a min-heap by default, and Comparator.reverseOrder() makes a max-heap.",
+      "explanation": "Avoid java.util.Stack (synchronized, extends Vector) and prefer ArrayDeque over LinkedList for speed. ArrayDeque does not allow null elements. PriorityQueue iteration order is not sorted; only poll() returns elements in order.",
+      "example": "Deque<Integer> stack = new ArrayDeque<>(); PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> Integer.compare(a[1], b[1]));",
+      "tags": [
+        "dsa",
+        "java",
+        "collections"
+      ],
+      "type": "basic"
+    },
+    {
+      "front": "Which sorting algorithms does Java use, and are they stable?",
+      "back": "Arrays.sort on primitives uses Dual-Pivot Quicksort (not stable, which doesn't matter for primitives). Arrays.sort on objects and Collections.sort / List.sort use TimSort, which is stable. Both are O(n log n).",
+      "explanation": "Stability matters when sorting objects by one key after another (sort by name, then stably by department keeps names in order within each department). In comparators, use Integer.compare(a, b) rather than a - b, which can overflow.",
+      "example": "people.sort(Comparator.comparing(Person::dept).thenComparing(Person::name));",
+      "tags": [
+        "dsa",
+        "sorting",
+        "java"
+      ],
+      "type": "basic"
+    },
+    {
+      "type": "cloze",
+      "text": "BFS finds the shortest path only when every edge has the same {{c1::weight}}.",
+      "extra": "Weighted shortest paths need Dijkstra (non-negative weights) or another algorithm. BFS and DFS on an adjacency list are O(n + m).",
+      "tags": [
+        "dsa",
+        "graphs"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "A binary heap removes the minimum in {{c1::O(log n)}}.",
+      "extra": "Finding the minimum is O(1). Building a heap from n items is O(n). Use it for top-k and priority scheduling, not for a fully sorted list.",
+      "tags": [
+        "dsa",
+        "heap"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Binary search needs a {{c1::monotonic}} predicate: once it becomes true, it stays true.",
+      "extra": "Sorted order is one example. 'Capacity x is enough' is another. If the predicate flickers, the cut is meaningless.",
+      "tags": [
+        "dsa",
+        "binary-search"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "A sliding window is O(n) because each element {{c1::enters and leaves the window at most once}}.",
+      "extra": "Even with a nested while loop for shrinking, the left pointer only moves forward.",
+      "tags": [
+        "dsa",
+        "patterns"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "A topological order exists only for a {{c1::directed acyclic graph (DAG)}}.",
+      "extra": "If Kahn's algorithm processes fewer nodes than exist, the graph has a cycle.",
+      "tags": [
+        "dsa",
+        "graphs"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Top K largest elements: keep a {{c1::min}}-heap of size K, for O(n log K) time.",
+      "extra": "The smallest of the current top K sits at the root, ready to be evicted.",
+      "tags": [
+        "dsa",
+        "heap"
+      ]
+    },
+    {
+      "type": "cloze",
+      "text": "Java's PriorityQueue is a {{c1::min}}-heap by default.",
+      "extra": "new PriorityQueue<>(Comparator.reverseOrder()) gives a max-heap.",
+      "tags": [
+        "dsa",
+        "java"
+      ]
+    }
+  ]
+}
