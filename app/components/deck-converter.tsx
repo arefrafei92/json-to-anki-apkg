@@ -21,10 +21,10 @@ export function DeckConverter() {
 
   const lineCount = useMemo(() => jsonText.split("\n").length, [jsonText]);
 
-  const loadSample = useCallback(async () => {
+  const loadExample = useCallback(async (path: string) => {
     setError(null);
     try {
-      const res = await fetch("/examples/sample-deck.json");
+      const res = await fetch(path);
       if (!res.ok) throw new Error("Could not load sample");
       setJsonText(await res.text());
     } catch (e) {
@@ -169,13 +169,16 @@ export function DeckConverter() {
         <h2 className="mb-2 font-semibold text-zinc-900">JSON format</h2>
         <ul className="list-inside list-disc space-y-1">
           <li>
-            <code className="text-zinc-800">deckName</code> or{" "}
-            <code className="text-zinc-800">name</code> — deck title
+            <code className="text-zinc-800">deckName</code>,{" "}
+            <code className="text-zinc-800">name</code>, or{" "}
+            <code className="text-zinc-800">deck</code> — deck title
           </li>
           <li>
-            <code className="text-zinc-800">cards</code> — array of basic cards (
+            <code className="text-zinc-800">cards</code> — basic (
             <code className="text-zinc-800">front</code>,{" "}
-            <code className="text-zinc-800">back</code>) or cloze cards (
+            <code className="text-zinc-800">back</code>, optional{" "}
+            <code className="text-zinc-800">explanation</code>,{" "}
+            <code className="text-zinc-800">example</code>) or cloze (
             <code className="text-zinc-800">type: &quot;cloze&quot;</code>,{" "}
             <code className="text-zinc-800">text</code>)
           </li>

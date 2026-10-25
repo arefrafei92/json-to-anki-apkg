@@ -1,0 +1,166 @@
+{
+  "deck": "Workplace English - Intermediate",
+  "description": "Practical English for meetings, collaboration, software development, and everyday workplace conversations.",
+  "cards": [
+    {
+      "type": "basic",
+      "front": "How do you politely ask for an update?",
+      "back": "Could you give me a quick update on this?",
+      "explanation": "A polite, natural way to ask about progress.",
+      "example": "Could you give me a quick update on the deployment?",
+      "tags": ["communication", "updates"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'I'll look into it' mean?",
+      "back": "I'll investigate it.",
+      "explanation": "'Look into' means to examine or investigate something.",
+      "example": "I'll look into the failing test and get back to you.",
+      "tags": ["phrases", "problem-solving"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you politely ask someone to repeat themselves?",
+      "back": "Sorry, I didn't quite catch that. Could you repeat it?",
+      "explanation": "'Catch that' means hear or understand something.",
+      "example": "Sorry, I didn't quite catch that. Did you say Friday?",
+      "tags": ["communication", "listening"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'keep me posted' mean?",
+      "back": "Keep me informed about new developments.",
+      "explanation": "Use this when you want someone to share updates.",
+      "example": "Keep me posted if the release date changes.",
+      "tags": ["phrases", "updates"]
+    },
+    {
+      "type": "basic",
+      "front": "How can you politely disagree in a meeting?",
+      "back": "I see your point, but I wonder if we could also consider another option.",
+      "explanation": "Acknowledge the other person's view before disagreeing.",
+      "example": "I see your point, but I wonder if we could simplify the design.",
+      "tags": ["meetings", "diplomacy"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'on the same page' mean?",
+      "back": "Having the same understanding or agreement.",
+      "explanation": "Often used to confirm shared expectations.",
+      "example": "Let's make sure we're on the same page about the deadline.",
+      "tags": ["phrases", "alignment"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you ask someone to clarify something?",
+      "back": "Could you clarify what you mean by that?",
+      "explanation": "Use 'clarify' when something is unclear.",
+      "example": "Could you clarify which environment you're referring to?",
+      "tags": ["communication", "clarification"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'circle back' mean?",
+      "back": "Return to a topic or discussion later.",
+      "explanation": "Common in meetings and project discussions.",
+      "example": "Let's circle back after we review the results.",
+      "tags": ["meetings", "phrases"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you professionally explain a delay?",
+      "back": "This is taking longer than expected. I expect to finish by Friday.",
+      "explanation": "Explain the delay and give a realistic revised estimate.",
+      "example": "The tests uncovered an issue, so I expect to finish by Friday.",
+      "tags": ["deadlines", "status-updates"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'I'm blocked' mean?",
+      "back": "I cannot make progress because something is preventing me.",
+      "explanation": "A blocker could be missing access, information, or a dependency.",
+      "example": "I'm blocked until I get access to the test environment.",
+      "tags": ["software-development", "blockers"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you politely ask a colleague for help?",
+      "back": "When you have a moment, could you help me with this?",
+      "explanation": "A considerate request that respects the other person's time.",
+      "example": "When you have a moment, could you help me debug this query?",
+      "tags": ["collaboration", "requests"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'That works for me' mean?",
+      "back": "That option or arrangement is acceptable to me.",
+      "explanation": "Common when agreeing on times or plans.",
+      "example": "Tuesday at 10 a.m.? That works for me.",
+      "tags": ["phrases", "scheduling"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you politely interrupt a meeting?",
+      "back": "Sorry to jump in, but could I add one thing?",
+      "explanation": "'Jump in' can mean enter a conversation.",
+      "example": "Sorry to jump in, but there's one risk we should discuss.",
+      "tags": ["meetings", "communication"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'follow up' mean?",
+      "back": "Contact someone again to check progress or get a response.",
+      "explanation": "It can be used as a verb or noun.",
+      "example": "I'll follow up with the vendor tomorrow.",
+      "tags": ["phrases", "communication"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'take ownership' mean?",
+      "back": "Accept responsibility for a task or outcome.",
+      "explanation": "It suggests being accountable for making progress.",
+      "example": "I'll take ownership of updating the documentation.",
+      "tags": ["teamwork", "responsibility"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'heads-up' mean?",
+      "back": "An advance warning or brief notice.",
+      "explanation": "Informal and common in workplace communication.",
+      "example": "Just a heads-up: the staging environment will be offline at noon.",
+      "tags": ["phrases", "updates"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'in the meantime' mean?",
+      "back": "During the period before something else happens.",
+      "explanation": "Useful for describing what will happen while waiting.",
+      "example": "The build is running. In the meantime, I'll update the ticket.",
+      "tags": ["vocabulary", "time"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'edge case' mean in software development?",
+      "back": "An unusual or boundary scenario that needs consideration.",
+      "explanation": "Edge cases can reveal bugs that typical scenarios don't expose.",
+      "example": "We should test what happens when the input list is empty.",
+      "tags": ["software-development", "vocabulary"]
+    },
+    {
+      "type": "basic",
+      "front": "What does 'LGTM' mean in a code review?",
+      "back": "Looks good to me.",
+      "explanation": "Common shorthand indicating that a reviewer thinks a change looks acceptable.",
+      "example": "LGTM. The tests pass, and the implementation looks good.",
+      "tags": ["software-development", "abbreviations"]
+    },
+    {
+      "type": "basic",
+      "front": "Which is correct: 'discuss the issue' or 'discuss about the issue'?",
+      "back": "Discuss the issue.",
+      "explanation": "'Discuss' takes a direct object; don't add 'about'.",
+      "example": "Let's discuss the timeline during tomorrow's meeting.",
+      "tags": ["grammar", "common-mistakes"]
+    }
+  ]
+}

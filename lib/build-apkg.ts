@@ -1,17 +1,12 @@
 import AnkiExport, { type ExportOptions } from "anki-apkg-export";
 import {
-  type ClozeCard,
   type DeckJson,
+  isClozeCard,
   parseDeckJson,
   resolveDeckName,
 } from "./deck-schema";
+import { formatBasicBack } from "./format-card-back";
 import { getSqlJs } from "./sql-js";
-
-function isClozeCard(
-  card: DeckJson["cards"][number],
-): card is ClozeCard {
-  return "type" in card && card.type === "cloze";
-}
 
 async function createExporter(
   deckName: string,
@@ -46,7 +41,12 @@ export async function buildApkgFromJson(input: unknown): Promise<{
         noteId: card.noteId,
       });
     } else {
-      apkg.addCard(card.front, card.back, {
+      const back = formatBasicBack(
+        card.back,
+        card.explanation,
+        card.example,
+      );
+      apkg.addCard(card.front, back, {
         tags: card.tags,
         deck: card.deck,
         noteId: card.noteId,

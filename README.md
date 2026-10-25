@@ -31,11 +31,15 @@ cat deck.json | npm run json-to-apkg -- -
 
 ```json
 {
-  "deckName": "My deck",
+  "deck": "My deck",
+  "description": "Optional notes for yourself",
   "cards": [
     {
+      "type": "basic",
       "front": "Question",
       "back": "Answer",
+      "explanation": "Optional short note",
+      "example": "Optional example sentence",
       "tags": ["optional", "tags"]
     },
     {
@@ -47,7 +51,9 @@ cat deck.json | npm run json-to-apkg -- -
 }
 ```
 
-- Use **`deckName`** or **`name`** for the deck title (required).
+- Use **`deckName`**, **`name`**, or **`deck`** for the deck title (required).
+- **`description`** is accepted in JSON for your own reference (not written into the `.apkg` metadata yet).
+- Basic cards may include **`explanation`** and **`example`**; they appear on the back of the card below the answer.
 - **`cards`** must contain at least one card.
 - Basic cards need **`front`** and **`back`**.
 - Cloze cards use **`type": "cloze"`**, **`text`**, and optional **`extra`**.
