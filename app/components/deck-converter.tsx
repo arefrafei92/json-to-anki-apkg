@@ -146,11 +146,11 @@ export function DeckConverter() {
         <button
           type="button"
           onClick={() =>
-            loadExample("/examples/workplace-english-intermediate.json")
+            loadExample("/examples/english-at-work-java.json")
           }
           className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
         >
-          Load workplace deck
+          Load Java workplace deck
         </button>
         <label className="cursor-pointer rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50">
           Select .json file
