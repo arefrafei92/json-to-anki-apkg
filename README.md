@@ -9,12 +9,12 @@ Includes:
 
 ## Shared decks
 
-JSON decks live in [`examples/`](examples/) and are copied to `public/examples/` so the site can load them. The list on the homepage comes from [`lib/shared-decks.ts`](lib/shared-decks.ts). To add another shared deck:
+Shared JSON decks live in [`public/shared-decks/`](public/shared-decks/) and are listed on the **Shared decks** page (`/decks`), which comes from [`lib/shared-decks.ts`](lib/shared-decks.ts). You can search them by title, topic, or category. Click a deck to generate and download its `.apkg`. To add another shared deck:
 
-1. Add `examples/your-deck.json` and copy it to `public/examples/`.
+1. Add `public/shared-decks/your-deck.json`.
 2. Add an entry in `lib/shared-decks.ts`.
 
-Select a shared deck in the UI, then generate the `.apkg`.
+To build one from the command line: `npm run json-to-apkg -- public/shared-decks/docker-and-containers.json`.
 
 ## Live site (free on GitHub Pages)
 
