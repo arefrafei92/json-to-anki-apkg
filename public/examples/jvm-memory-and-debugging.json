@@ -1,0 +1,274 @@
+{
+  "deck": "JVM Memory and Debugging",
+  "description": "How JVM memory is laid out, how garbage collection behaves, and a practical toolkit for debugging production Java: GC logs, heap dumps and Eclipse MAT, thread dumps, high CPU, JFR, native memory, and remote debugging. Commands use jcmd, which ships with the JDK.",
+  "cards": [
+    {
+      "type": "basic",
+      "front": "Which memory areas does a running JVM use besides the heap?",
+      "back": "Metaspace (class metadata), thread stacks (one per thread), the code cache (JIT-compiled code), direct and mapped buffers (NIO, Netty), GC bookkeeping, and native memory used by libraries.",
+      "explanation": "This is why the process uses more memory than -Xmx. A service with a 1 GB heap and 400 threads at 1 MB stack each can sit near 1.5 GB of resident memory before counting anything else. Container memory limits must cover all of it, not just the heap. When the process is larger than expected but the heap looks fine, look off-heap.",
+      "example": "-Xmx1g, 300 threads, 150 MB metaspace, 240 MB code cache, and 200 MB of Netty direct buffers can exceed a 1.5 GB container limit.",
+      "tags": ["jvm", "memory"]
+    },
+    {
+      "type": "basic",
+      "front": "Why does the heap have a young generation and an old generation?",
+      "back": "Most objects die young (request-scoped DTOs, temporary strings). Collecting a small young area often is cheap. Objects that survive several young collections are promoted to the old generation, which is collected less often.",
+      "explanation": "This is the generational hypothesis. A young collection copies live objects out of eden into survivor space, and the dead ones cost nothing. Trouble starts when short-lived objects survive long enough to be promoted (for example, held in a queue during a slow downstream call), which fills the old generation and causes longer collections.",
+      "example": "A JSON response built for one request dies in eden. A cache entry kept for an hour is promoted to the old generation.",
+      "tags": ["jvm", "gc"]
+    },
+    {
+      "type": "basic",
+      "front": "What makes an object eligible for garbage collection?",
+      "back": "It is not reachable from any GC root: local variables on live thread stacks, static fields, JNI references, and similar. Reachability, not reference counting, decides.",
+      "explanation": "Cycles are fine: two objects that only point at each other are collected together. A memory leak in Java therefore always means some root still reaches the object, usually a static collection, a long-lived cache, a listener list, or a ThreadLocal on a pooled thread. Heap analyzers show the 'path to GC roots' to tell you exactly which reference is holding it.",
+      "example": "static final List<Order> DEBUG = new ArrayList<>(); keeps every added Order reachable for the life of the class loader.",
+      "tags": ["jvm", "gc", "memory-leak"]
+    },
+    {
+      "type": "basic",
+      "front": "What is a stop-the-world pause, and what is G1's default pause target?",
+      "back": "A phase where all application threads stop so the collector can work safely. G1 aims for pauses under -XX:MaxGCPauseMillis, which defaults to 200 ms.",
+      "explanation": "The target is a goal, not a guarantee. G1 adjusts how much it collects per pause to try to meet it. Setting it very low makes G1 collect less each time, which can increase frequency and overall overhead. If p99 latency spikes line up with GC pauses in the log, the heap is either too small, too full of live data, or allocation is too high.",
+      "example": "A 1.8 s GC pause in the log at 14:02:11 matching a burst of request timeouts at the same second is your culprit.",
+      "tags": ["jvm", "gc", "latency"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you turn on GC logging in Java 11 or 17?",
+      "back": "Use unified logging: -Xlog:gc*:file=/logs/gc.log:time,uptime,level,tags:filecount=5,filesize=20m",
+      "explanation": "The old -XX:+PrintGCDetails flags were replaced in JDK 9. GC logging is cheap and should be on in production so you have data when something goes wrong, not after. Rotate the files so they do not fill the disk. Tools like GCeasy or GCViewer turn the log into pause and heap charts.",
+      "example": "JAVA_TOOL_OPTIONS=\"-Xlog:gc*:file=/logs/gc.log:time,uptime:filecount=5,filesize=20m\"",
+      "tags": ["jvm", "gc", "logging"]
+    },
+    {
+      "type": "basic",
+      "front": "In a heap-usage graph, what does a healthy pattern look like, and what does a leak look like?",
+      "back": "Healthy: a sawtooth that climbs, drops after each collection, and returns to roughly the same floor. Leak: the floor after each full or mixed collection keeps rising over hours or days.",
+      "explanation": "Look at heap used after GC, not total heap used. A high peak is normal; Java uses the heap it has. A rising floor means live data is growing. If it grows with traffic and stabilizes, it may be a correctly sized cache. If it grows forever, something keeps adding references. Confirm with two heap dumps taken hours apart and compare what grew.",
+      "example": "After-GC heap: 300 MB at 09:00, 520 MB at 13:00, 790 MB at 17:00, then OutOfMemoryError overnight.",
+      "tags": ["jvm", "memory-leak", "debugging"]
+    },
+    {
+      "type": "basic",
+      "front": "Name four different OutOfMemoryError messages and what each points to.",
+      "back": "'Java heap space': live objects do not fit in the heap. 'GC overhead limit exceeded': the JVM spends almost all its time collecting and frees almost nothing. 'Metaspace': too many classes or a class loader leak. 'unable to create native thread': too many threads or an OS/container thread limit.",
+      "explanation": "'Direct buffer memory' is a fifth: NIO or Netty off-heap buffers exceeded -XX:MaxDirectMemorySize. Read the message before you change -Xmx. Raising the heap does nothing for a thread or metaspace problem, and it can make a container OOMKill more likely by squeezing off-heap memory.",
+      "example": "java.lang.OutOfMemoryError: unable to create native thread → count threads in a thread dump; a thread pool created per request is a common cause.",
+      "tags": ["jvm", "oom", "debugging"]
+    },
+    {
+      "type": "basic",
+      "front": "Which flags make a production JVM leave evidence when it runs out of heap?",
+      "back": "-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dumps and usually -XX:+ExitOnOutOfMemoryError.",
+      "explanation": "Without the dump you have only the error message. Point the path at a persistent volume with enough space (a dump is roughly the size of the used heap). ExitOnOutOfMemoryError makes the JVM die so the orchestrator restarts it, instead of limping on with broken threads after an OOM. Heap dumps contain everything in memory, including personal data and tokens, so handle them as sensitive.",
+      "example": "-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dumps -XX:+ExitOnOutOfMemoryError",
+      "tags": ["jvm", "oom", "operations"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you take a heap dump of a running JVM, and what does it cost?",
+      "back": "jcmd <pid> GC.heap_dump /tmp/orders.hprof. It pauses the application while it writes, and the file is about the size of the live heap.",
+      "explanation": "By default it dumps only live objects, which triggers a full collection first. On a 4 GB heap expect seconds of pause. Take it from an instance removed from the load balancer if you can. Use jcmd -l or jps to find the PID. In a container, run jcmd inside the container as the same user as the java process.",
+      "example": "jcmd -l\njcmd 1 GC.heap_dump /dumps/orders-$(date +%s).hprof",
+      "tags": ["jvm", "heap-dump", "jcmd"]
+    },
+    {
+      "type": "basic",
+      "front": "What is the difference between shallow size and retained size in a heap analyzer?",
+      "back": "Shallow size is the memory of the object itself. Retained size is everything that would be freed if that object were collected, including all objects only it keeps alive.",
+      "explanation": "Hunt leaks by retained size. A HashMap object is only a few dozen bytes shallow, but if it is the only path to two million entries, its retained size is gigabytes. Eclipse MAT's dominator tree sorts by retained size and usually puts the leaking collection near the top within a minute.",
+      "example": "ConcurrentHashMap in CacheService: shallow 64 bytes, retained 1.9 GB → the unbounded cache is the leak.",
+      "tags": ["jvm", "heap-dump", "mat"]
+    },
+    {
+      "type": "basic",
+      "front": "Walk through finding a leak in Eclipse MAT.",
+      "back": "Open the dump, read the Leak Suspects report, open the dominator tree sorted by retained size, then run 'Path to GC Roots' (excluding weak and soft references) on the biggest suspicious object.",
+      "explanation": "The path to GC roots tells you the chain of references keeping the object alive, ending at a static field or a thread. That chain is the bug report: 'OrderEventListener is registered in a static list in EventBus and never removed'. The histogram (count by class) is a quick sanity check: millions of instances of one of your own classes is a strong signal.",
+      "example": "Dominator tree → com.acme.CacheService → ConcurrentHashMap (1.9 GB) → path to GC roots → static field CacheService.INSTANCE.",
+      "tags": ["jvm", "heap-dump", "mat", "debugging"]
+    },
+    {
+      "type": "basic",
+      "front": "How can you get a quick view of which classes fill the heap without a full dump?",
+      "back": "jcmd <pid> GC.class_histogram prints instance counts and bytes per class.",
+      "explanation": "It is faster and far smaller than a heap dump, though it also forces a full GC and does not show who holds the objects. Take two histograms some minutes apart and compare: a class whose count only goes up is your lead. Then take a real heap dump to find the reference chain.",
+      "example": "jcmd 1 GC.class_histogram | head -20",
+      "tags": ["jvm", "jcmd", "memory-leak"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you take a thread dump, and why take several?",
+      "back": "jcmd <pid> Thread.print (or jstack <pid>, or kill -3 <pid> which writes to stdout). Take three dumps five to ten seconds apart.",
+      "explanation": "One dump is a snapshot; a thread that happens to be in a slow method at that instant proves nothing. If the same thread shows the same stack in all three dumps, it is genuinely stuck there. Thread dumps do not pause the app noticeably and contain no request data, so they are safe to take in production.",
+      "example": "for i in 1 2 3; do jcmd 1 Thread.print > /tmp/td-$i.txt; sleep 5; done",
+      "tags": ["jvm", "thread-dump", "jcmd"]
+    },
+    {
+      "type": "basic",
+      "front": "What do the thread states BLOCKED, WAITING, and TIMED_WAITING mean in a thread dump?",
+      "back": "BLOCKED: waiting to enter a synchronized block someone else holds. WAITING: parked indefinitely (wait(), LockSupport.park, a queue take). TIMED_WAITING: the same with a timeout (sleep, poll with timeout).",
+      "explanation": "Many idle pool threads in WAITING on a queue is normal: they are waiting for work. Many request threads BLOCKED on the same monitor means lock contention. RUNNABLE also includes threads blocked in native I/O, such as a socket read waiting on a slow database, so RUNNABLE does not mean 'using CPU'.",
+      "example": "\"http-nio-8080-exec-17\" BLOCKED (on object monitor) - waiting to lock <0x...> (a com.acme.PriceCache) held by \"http-nio-8080-exec-3\"",
+      "tags": ["jvm", "thread-dump", "concurrency"]
+    },
+    {
+      "type": "basic",
+      "front": "Every request hangs, CPU is low, and the thread dump shows all Tomcat threads WAITING in HikariPool.getConnection. What is happening?",
+      "back": "The database connection pool is exhausted. Every request thread is waiting for a connection, and the connections are held by slow or leaked work.",
+      "explanation": "Look for what holds the connections: long transactions, slow queries, a remote HTTP call made inside a @Transactional method, or a connection not closed. Hikari logs 'Connection is not available, request timed out after 30000ms' and has leakDetectionThreshold to log where a connection was taken. Making the pool bigger usually moves the bottleneck to the database instead of fixing it.",
+      "example": "spring.datasource.hikari.leak-detection-threshold=20000 logs the stack that borrowed a connection and held it for over 20 seconds.",
+      "tags": ["debugging", "thread-dump", "database"]
+    },
+    {
+      "type": "basic",
+      "front": "How does a thread dump report a deadlock?",
+      "back": "jcmd Thread.print and jstack add a section at the end: 'Found one Java-level deadlock', listing each thread, the lock it holds, and the lock it waits for.",
+      "explanation": "The JVM detects deadlocks on monitors (synchronized) and ownable synchronizers (ReentrantLock). It cannot see a deadlock that spans two services or a database lock wait, where threads just look slow. The fix is a consistent lock order, shorter critical sections, or tryLock with a timeout.",
+      "example": "Found one Java-level deadlock:\n\"pool-1-thread-2\": waiting to lock monitor 0x... (Account A), which is held by \"pool-1-thread-1\"",
+      "tags": ["jvm", "thread-dump", "deadlock"]
+    },
+    {
+      "type": "basic",
+      "front": "A Java process is pinned at 100% CPU. How do you find the exact thread and line?",
+      "back": "Run top -H -p <pid> to see per-thread CPU, convert the hottest thread ID to hexadecimal, then find nid=0x<hex> in a thread dump taken at the same moment.",
+      "explanation": "The nid in a thread dump is the native thread ID in hex. Match it and read the stack: an infinite loop, a regex with catastrophic backtracking, a busy spin, or GC threads (which means memory pressure, not your code). If the hot threads are 'GC Thread#n', go back to the GC log. A profiler gives the same answer with less manual work.",
+      "example": "top -H -p 4123 → TID 4187 at 98%. printf '%x' 4187 → 105b. grep -A 20 'nid=0x105b' td.txt",
+      "tags": ["debugging", "cpu", "thread-dump"]
+    },
+    {
+      "type": "basic",
+      "front": "What is Java Flight Recorder, and why is it safe to use in production?",
+      "back": "A low-overhead event recorder built into the JVM (open-sourced in JDK 11). It records CPU samples, allocations, GC, locks, I/O, and exceptions, typically for about 1% overhead with the default settings.",
+      "explanation": "Start it on a live process with jcmd, let it run during the problem, and open the .jfr file in JDK Mission Control. The 'hot methods', 'allocation by class', and 'lock contention' views answer most performance questions without a heap dump's pause. You can also run it continuously with a ring buffer and dump the last minutes when something goes wrong.",
+      "example": "jcmd 1 JFR.start name=slow duration=120s filename=/dumps/slow.jfr settings=profile",
+      "tags": ["jvm", "jfr", "profiling"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you read a flame graph from a profiler like async-profiler or JFR?",
+      "back": "Each box is a method in a stack. Width is the share of samples (time or allocations), not call order. The widest boxes near the top of the stack are where the time actually goes.",
+      "explanation": "Start from the widest frames that are your code, not framework frames at the bottom. A wide plateau of java.util.regex or Jackson inside your endpoint is a lead. Allocation flame graphs show who creates the garbage that drives GC. Compare a graph from before and after a change rather than reading one in isolation.",
+      "example": "A wide box OrderMapper.toDto → ObjectMapper.readValue called per row means you parse JSON inside a loop.",
+      "tags": ["profiling", "performance"]
+    },
+    {
+      "type": "basic",
+      "front": "Process memory keeps growing but the heap is flat. How do you see where native memory goes?",
+      "back": "Start the JVM with -XX:NativeMemoryTracking=summary, then run jcmd <pid> VM.native_memory summary. It breaks memory into heap, class, thread, code, GC, internal, and other categories.",
+      "explanation": "NMT adds a little overhead, so enable it while investigating. Run it with baseline and later summary.diff to see which category grows. Growth in Thread means more threads; in Class means metaspace; in Other or Internal often means direct buffers or a native library. Memory allocated directly by native libraries outside the JVM is not tracked.",
+      "example": "jcmd 1 VM.native_memory baseline\n# wait an hour\njcmd 1 VM.native_memory summary.diff",
+      "tags": ["jvm", "memory", "native"]
+    },
+    {
+      "type": "basic",
+      "front": "What usually causes a Metaspace OutOfMemoryError in a long-running service?",
+      "back": "Classes being generated and never unloaded: a class loader that stays reachable, repeated hot redeploys in an app server, or code that creates new proxy or script classes per request.",
+      "explanation": "Classes can only be unloaded when their whole class loader is unreachable. One leftover reference (a ThreadLocal, a JDBC driver registration, a static cache) keeps the entire loader and every class it loaded. Watch for frameworks generating classes dynamically (Groovy scripts, CGLIB, reflection-heavy libraries) inside a loop.",
+      "example": "Compiling a new Groovy script class for every incoming rule evaluation grows metaspace until OutOfMemoryError: Metaspace.",
+      "tags": ["jvm", "metaspace", "oom"]
+    },
+    {
+      "type": "basic",
+      "front": "High GC activity but no leak: what is the likely cause, and how do you fix it?",
+      "back": "A high allocation rate: the code creates huge amounts of short-lived garbage. The fix is allocating less, not a bigger heap.",
+      "explanation": "Typical sources: loading full entities when you need two columns, building giant Strings by concatenation, boxing in hot loops (List<Integer> of millions), copying collections repeatedly, or reading a whole file into memory. JFR's allocation view and an allocation flame graph show the call sites. A bigger young generation can reduce GC frequency but treats the symptom.",
+      "example": "A batch job that maps 2 million rows to entities, then to DTOs, then to JSON strings, allocates three copies of everything.",
+      "tags": ["jvm", "gc", "performance"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you check which flags and memory settings a running JVM actually uses?",
+      "back": "jcmd <pid> VM.flags shows effective flags. jcmd <pid> VM.command_line shows how it was started. jcmd <pid> VM.system_properties shows system properties.",
+      "explanation": "This settles arguments like 'is MaxRAMPercentage applied?' or 'which GC is it using?' without guessing from config files. Look for MaxHeapSize in VM.flags (in bytes). java -XX:+PrintFlagsFinal -version shows defaults for a given JVM and machine.",
+      "example": "jcmd 1 VM.flags | tr ' ' '\\n' | grep -E 'MaxHeapSize|UseG1GC|MaxRAMPercentage'",
+      "tags": ["jvm", "jcmd", "configuration"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you read a long Java stack trace with several 'Caused by' sections?",
+      "back": "The root cause is the last 'Caused by' at the bottom. Read that exception and its first frames in your own package first, then walk upward to see how it was wrapped.",
+      "explanation": "Frameworks wrap exceptions: a DataIntegrityViolationException caused by a ConstraintViolationException caused by a PSQLException that finally says 'duplicate key value violates unique constraint orders_external_id_key'. '... 37 more' means those frames are identical to the enclosing trace and were elided. When logging, always pass the exception object to the logger so the cause chain is kept.",
+      "example": "log.error(\"Failed to save order {}\", id, e);  // keeps the full chain\nlog.error(\"Failed: \" + e.getMessage());  // loses it",
+      "tags": ["debugging", "exceptions"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you attach a debugger to a Java process running in a container or on a test server?",
+      "back": "Start it with -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005, publish or port-forward 5005, and create a Remote JVM Debug configuration in IntelliJ pointing at that host and port.",
+      "explanation": "suspend=y makes the JVM wait for the debugger before starting, which is how you debug startup failures. Never expose the debug port publicly: JDWP has no authentication and allows running arbitrary code. Do not pause a production instance on a breakpoint; every request on that instance freezes. Use it in local and test environments, or use logging and JFR in production.",
+      "example": "kubectl port-forward pod/orders-7f9c 5005:5005 then attach IntelliJ to localhost:5005.",
+      "tags": ["debugging", "ide", "remote"]
+    },
+    {
+      "type": "basic",
+      "front": "Which IntelliJ debugger features save the most time on a real bug?",
+      "back": "Conditional breakpoints, Evaluate Expression, exception breakpoints, and non-suspending logging breakpoints.",
+      "explanation": "A conditional breakpoint (orderId.equals(\"A-1042\")) stops only for the failing case inside a loop of thousands. An exception breakpoint on NullPointerException stops where it is thrown, even if something catches it later. A breakpoint with 'Suspend' unchecked and 'Evaluate and log' set prints values without stopping, which is great for concurrency bugs that disappear when paused.",
+      "example": "Right-click breakpoint → Condition: order.getTotal().signum() < 0",
+      "tags": ["debugging", "ide"]
+    },
+    {
+      "type": "basic",
+      "front": "Spring Boot Actuator can expose heap dumps and thread dumps. What is the risk?",
+      "back": "/actuator/heapdump returns the whole heap, including passwords, tokens, and customer data, to whoever can call it. /actuator/threaddump and /actuator/env also leak internals.",
+      "explanation": "Expose only health and info publicly. Put the rest on a separate management port that is not reachable from the internet, and protect it with authentication. Exposed actuator endpoints are a well-known source of real breaches. Within a secured setup, they are a convenient way to get dumps from a container without a JDK.",
+      "example": "management.server.port=9091\nmanagement.endpoints.web.exposure.include=health,info,prometheus",
+      "tags": ["spring", "security", "operations"]
+    },
+    {
+      "type": "basic",
+      "front": "An endpoint got slow after a deploy. Give a step-by-step debugging order.",
+      "back": "1. Confirm with metrics: which endpoint, which percentile, since when. 2. Check what changed in that deploy. 3. Check dependencies (database, downstream services) latency. 4. Look at GC pauses and CPU. 5. Take thread dumps or a short JFR recording on one instance. 6. Reproduce locally with the same data shape.",
+      "explanation": "Start broad and cheap, then go deep. Most 'slow after deploy' bugs are a new query without an index, an N+1 query, a removed cache, or a new synchronous call. Rolling back is a valid first move when users are affected; investigate on the old version afterwards. Write down the timeline as you go; it becomes the incident report.",
+      "example": "p95 for GET /orders went from 120 ms to 2.4 s at the 14:05 deploy. The diff added order.getItems() inside a loop → N+1.",
+      "tags": ["debugging", "performance", "workflow"]
+    },
+    {
+      "type": "basic",
+      "front": "Should -Xms equal -Xmx on a server?",
+      "back": "Often yes for a long-running service: the heap is sized once at startup, so the JVM does not spend time growing it under load and you learn at startup if the memory is not available.",
+      "explanation": "In containers, many teams instead set -XX:InitialRAMPercentage and -XX:MaxRAMPercentage to the same value. The trade-off is that an idle service reserves its full heap. For batch jobs or developer machines, a smaller initial size is fine. Either way, measure the live data set after GC and size the heap with headroom, rather than guessing.",
+      "example": "JAVA_TOOL_OPTIONS=\"-XX:InitialRAMPercentage=70 -XX:MaxRAMPercentage=70\"",
+      "tags": ["jvm", "configuration", "memory"]
+    },
+    {
+      "type": "cloze",
+      "text": "To find a memory leak in a heap dump, sort objects by {{c1::retained}} size.",
+      "extra": "Retained size counts everything freed if the object were collected. Shallow size is only the object itself. MAT's dominator tree uses retained size.",
+      "tags": ["heap-dump", "mat"]
+    },
+    {
+      "type": "cloze",
+      "text": "jcmd <pid> {{c1::Thread.print}} prints a thread dump.",
+      "extra": "jstack <pid> and kill -3 <pid> work too. Take three dumps a few seconds apart to tell stuck threads from momentary ones.",
+      "tags": ["jcmd", "thread-dump"]
+    },
+    {
+      "type": "cloze",
+      "text": "jcmd <pid> {{c1::GC.heap_dump}} /tmp/app.hprof writes a heap dump.",
+      "extra": "It pauses the application and the file is about the size of the live heap. Heap dumps contain sensitive data.",
+      "tags": ["jcmd", "heap-dump"]
+    },
+    {
+      "type": "cloze",
+      "text": "A thread in state {{c1::BLOCKED}} is waiting to enter a synchronized block held by another thread.",
+      "extra": "WAITING and TIMED_WAITING are parked or sleeping. RUNNABLE can still be waiting on native socket I/O.",
+      "tags": ["thread-dump", "concurrency"]
+    },
+    {
+      "type": "cloze",
+      "text": "The root cause of a wrapped exception is the {{c1::last 'Caused by'}} in the stack trace.",
+      "extra": "Pass the exception object to the logger (log.error(msg, e)) or the cause chain is lost.",
+      "tags": ["debugging", "exceptions"]
+    },
+    {
+      "type": "cloze",
+      "text": "-XX:NativeMemoryTracking=summary plus jcmd <pid> {{c1::VM.native_memory}} summary shows off-heap memory by category.",
+      "extra": "Use baseline and summary.diff to see what grows. Thread, Class, Code, and GC are separate categories.",
+      "tags": ["jvm", "native"]
+    }
+  ]
+}

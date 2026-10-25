@@ -1,0 +1,278 @@
+{
+  "deck": "Spring Boot and JPA at Work",
+  "description": "The Spring and Hibernate behavior that causes real production bugs and code-review comments: proxies and @Transactional, propagation and rollback rules, N+1 queries, lazy loading, open-in-view, connection pools, locking, projections, and the persistence context.",
+  "cards": [
+    {
+      "type": "basic",
+      "front": "What is a Spring bean, and what does the container do with it?",
+      "back": "An object whose lifecycle Spring manages: it creates it, injects its dependencies, may wrap it in a proxy, and calls lifecycle callbacks. Singleton scope (the default) means one shared instance per application context.",
+      "explanation": "Because the default scope is singleton, beans are shared across all request threads. Never keep request-specific state in fields of a @Service or @Controller; that causes data leaking between users under load. Keep beans stateless, or put state in method locals.",
+      "example": "A @Service with a field 'private User currentUser;' set per request is a race condition: two concurrent requests overwrite each other.",
+      "tags": ["spring", "beans"]
+    },
+    {
+      "type": "basic",
+      "front": "Why prefer constructor injection over field injection (@Autowired on fields)?",
+      "back": "Dependencies become final and explicit, the class can be built in a plain unit test with 'new', missing dependencies fail at startup, and too many constructor parameters make a class that does too much obvious.",
+      "explanation": "With a single constructor, @Autowired is optional. Lombok's @RequiredArgsConstructor generates it for final fields. Field injection hides dependencies and forces reflection or a Spring context in tests.",
+      "example": "@Service @RequiredArgsConstructor class OrderService { private final OrderRepository repo; private final Clock clock; }",
+      "tags": ["spring", "di", "code-review"]
+    },
+    {
+      "type": "basic",
+      "front": "How do @Transactional, @Cacheable, and @Async actually work?",
+      "back": "Spring wraps the bean in a proxy (JDK dynamic proxy or CGLIB subclass). Callers get the proxy; the proxy starts the transaction, checks the cache, or submits to an executor, and then calls the real method.",
+      "explanation": "The annotation does nothing by itself. It only works when the call goes through the proxy. This one fact explains self-invocation bugs, why private methods are ignored, and why 'new MyService()' gives you an object with no transactional behavior.",
+      "example": "In a stack trace you see OrderService$$SpringCGLIB$$0.placeOrder above OrderService.placeOrder: that is the proxy layer.",
+      "tags": ["spring", "aop", "proxy"]
+    },
+    {
+      "type": "basic",
+      "front": "Why does @Transactional not work when a method calls another method in the same class?",
+      "back": "Self-invocation: 'this.otherMethod()' calls the real object directly, skipping the proxy, so no transaction (or cache, or async) is applied to otherMethod.",
+      "explanation": "Fixes: move the method to another bean and inject it, put @Transactional on the outer public method, or use TransactionTemplate for programmatic control. Injecting the bean into itself works but is a smell.",
+      "example": "public void importAll() { for (Row r : rows) saveRow(r); } @Transactional(propagation = REQUIRES_NEW) public void saveRow(Row r) — REQUIRES_NEW is silently ignored because saveRow is called via 'this'.",
+      "tags": ["spring", "transactions", "proxy", "bug"]
+    },
+    {
+      "type": "basic",
+      "front": "Which exceptions roll back a Spring @Transactional method by default?",
+      "back": "Unchecked exceptions (RuntimeException and Error). Checked exceptions commit the transaction unless you configure rollbackFor.",
+      "explanation": "This surprises people who throw a checked IOException or a custom checked business exception and find half the data saved. Use @Transactional(rollbackFor = Exception.class) or throw unchecked exceptions. Catching an exception inside the method and not rethrowing also means commit.",
+      "example": "@Transactional public void transfer() throws InsufficientFundsException { debit(); throw new InsufficientFundsException(); } — the debit commits.",
+      "tags": ["spring", "transactions", "bug"]
+    },
+    {
+      "type": "basic",
+      "front": "What causes 'UnexpectedRollbackException: Transaction silently rolled back because it has been marked as rollback-only'?",
+      "back": "An inner @Transactional method (REQUIRED, so same transaction) threw a RuntimeException, which marked the shared transaction rollback-only. The outer method caught the exception and tried to commit.",
+      "explanation": "With REQUIRED there is only one physical transaction, so the inner failure poisons it. If the inner work should fail independently, use REQUIRES_NEW (in a separate bean) or don't catch and continue. Catching and logging in the outer method does not undo the mark.",
+      "example": "try { auditService.record(e); } catch (Exception ex) { log.warn(...); } — if record() throws, the outer commit still fails.",
+      "tags": ["spring", "transactions", "debugging"]
+    },
+    {
+      "type": "basic",
+      "front": "REQUIRED vs REQUIRES_NEW propagation: what is the difference and when do you use REQUIRES_NEW?",
+      "back": "REQUIRED joins the existing transaction (or starts one). REQUIRES_NEW suspends the current transaction and runs in a new, independent one that commits or rolls back on its own.",
+      "explanation": "Use REQUIRES_NEW for work that must persist even if the caller rolls back, such as audit logs or outbox status updates. Cost: it holds a second database connection while the first is suspended, which can exhaust the pool and even deadlock under load.",
+      "example": "A pool of 10 connections and 10 concurrent requests that each call a REQUIRES_NEW method: every request holds one connection and waits for another, so all hang.",
+      "tags": ["spring", "transactions", "propagation"]
+    },
+    {
+      "type": "basic",
+      "front": "What does @Transactional(readOnly = true) actually do?",
+      "back": "It hints that no writes will happen: Hibernate skips dirty checking and flushing (sets FlushMode MANUAL), the JDBC connection may be set read-only, and routing data sources can send it to a replica.",
+      "explanation": "It is a performance and intent hint, not a security guarantee. Large read-only queries benefit because Hibernate does not keep snapshots for dirty checking. A common convention is readOnly = true at class level and plain @Transactional on write methods.",
+      "example": "@Transactional(readOnly = true) public List<OrderDto> search(...) { ... }",
+      "tags": ["spring", "transactions", "performance"]
+    },
+    {
+      "type": "basic",
+      "front": "Why is calling a remote HTTP service inside a @Transactional method risky?",
+      "back": "The database connection (and row locks) are held for the whole HTTP call. Slow remote calls exhaust the connection pool, and if the transaction rolls back the remote side effect has already happened.",
+      "explanation": "Keep transactions short and database-only. Do remote calls before or after the transaction, or use the outbox pattern: write an event row in the same transaction and publish it afterwards.",
+      "example": "@Transactional placeOrder() { save(order); paymentClient.charge(...); } — a 5 s payment timeout holds a connection for 5 s per request.",
+      "tags": ["spring", "transactions", "design"]
+    },
+    {
+      "type": "basic",
+      "front": "What is the N+1 query problem in JPA?",
+      "back": "One query loads N parent entities, then touching a lazy association on each one fires another query per parent: 1 + N queries instead of 1 or 2.",
+      "explanation": "It is invisible in code and in tests with 3 rows, then slow in production with 500 rows. Detect it by enabling SQL logging or Hibernate statistics in development, or with a test that asserts the query count.",
+      "example": "orderRepo.findAll().forEach(o -> o.getItems().size()); — 1 query for orders, plus 1 per order for items.",
+      "tags": ["jpa", "hibernate", "performance", "n+1"]
+    },
+    {
+      "type": "basic",
+      "front": "What are the standard fixes for N+1 in Spring Data JPA?",
+      "back": "A JOIN FETCH query, an @EntityGraph on the repository method, Hibernate batch fetching (@BatchSize or hibernate.default_batch_fetch_size), or a DTO projection that selects exactly the needed columns.",
+      "explanation": "JOIN FETCH on a collection multiplies rows, so combining it with pagination makes Hibernate paginate in memory (warning HHH90003004). For paged lists, page the parent IDs first, then fetch children with batch fetching or a second query.",
+      "example": "@EntityGraph(attributePaths = \"items\") List<Order> findByCustomerId(Long id);  or  spring.jpa.properties.hibernate.default_batch_fetch_size=50",
+      "tags": ["jpa", "hibernate", "n+1"]
+    },
+    {
+      "type": "basic",
+      "front": "What are the default fetch types for JPA associations, and what should you use?",
+      "back": "@ManyToOne and @OneToOne default to EAGER; @OneToMany and @ManyToMany default to LAZY. Common practice: make everything LAZY and fetch explicitly per use case.",
+      "explanation": "EAGER can't be turned off per query and silently drags in extra joins or extra queries everywhere the entity is loaded. LAZY plus an entity graph or fetch join where needed keeps queries predictable.",
+      "example": "@ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = \"customer_id\") private Customer customer;",
+      "tags": ["jpa", "hibernate", "fetching"]
+    },
+    {
+      "type": "basic",
+      "front": "What causes LazyInitializationException: could not initialize proxy - no Session?",
+      "back": "A lazy association is touched after the persistence context (Hibernate session) is closed, typically outside the transaction, for example in a controller, a Jackson serializer, or an async thread.",
+      "explanation": "Fix by loading what you need inside the transaction (fetch join, entity graph) and mapping to a DTO before returning. Do not 'fix' it with EAGER everywhere or by enabling hibernate.enable_lazy_load_no_trans, which opens a new session per lazy load.",
+      "example": "Returning an Order entity from a @RestController: Jackson calls getItems() after the service's transaction ended, and the response fails.",
+      "tags": ["jpa", "hibernate", "debugging"]
+    },
+    {
+      "type": "basic",
+      "front": "What is spring.jpa.open-in-view, and why do many teams set it to false?",
+      "back": "When true (the Spring Boot default, with a startup warning) the persistence context stays open for the whole web request, so lazy loading works in controllers and views. Teams disable it because it holds a database connection through rendering and hides N+1 queries.",
+      "explanation": "With it off, LazyInitializationException shows up early and forces explicit fetching in the service layer. That is the behavior you want in a service under load.",
+      "example": "spring.jpa.open-in-view=false",
+      "tags": ["spring-boot", "jpa", "configuration"]
+    },
+    {
+      "type": "basic",
+      "front": "What is the persistence context and what is dirty checking?",
+      "back": "The persistence context is the first-level cache of managed entities for a transaction. At flush, Hibernate compares each managed entity with its snapshot and issues UPDATEs for changed ones, without you calling save().",
+      "explanation": "This is why changing a field on a loaded entity inside @Transactional updates the database even with no repository call. It also means loading 50,000 entities into one transaction costs memory for entities plus snapshots and makes flush slow.",
+      "example": "@Transactional void rename(Long id, String name) { userRepo.findById(id).orElseThrow().setName(name); } — an UPDATE is issued at commit.",
+      "tags": ["jpa", "hibernate", "persistence-context"]
+    },
+    {
+      "type": "basic",
+      "front": "When does Hibernate flush pending changes to the database?",
+      "back": "At transaction commit, before running a JPQL/HQL query whose result could be affected (FlushMode AUTO), and when you call flush() explicitly.",
+      "explanation": "SQL errors such as constraint violations often appear at flush, not at the save() line, so the stack trace may point to commit or to an unrelated query. Call saveAndFlush() or flush() in tests when you need the error at a specific place.",
+      "example": "repo.save(userWithDuplicateEmail); // no error yet ... commit -> DataIntegrityViolationException",
+      "tags": ["jpa", "hibernate", "debugging"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you process a large table in JPA without running out of memory?",
+      "back": "Read in pages or chunks by key (keyset pagination: WHERE id > :lastId ORDER BY id LIMIT n), clear the persistence context between chunks, and set hibernate.jdbc.batch_size for writes.",
+      "explanation": "Offset pagination gets slower as the offset grows because the database still scans skipped rows. A Stream<T> query result keeps every entity managed unless you detach or clear. For bulk updates, a single UPDATE statement often beats loading entities.",
+      "example": "for each chunk: process(rows); entityManager.flush(); entityManager.clear();",
+      "tags": ["jpa", "performance", "batch"]
+    },
+    {
+      "type": "basic",
+      "front": "What does @Version do on a JPA entity?",
+      "back": "It enables optimistic locking: every UPDATE includes 'WHERE version = ?' and increments the version. If another transaction changed the row first, zero rows match and Hibernate throws OptimisticLockException (Spring: ObjectOptimisticLockingFailureException).",
+      "explanation": "It prevents lost updates without holding database locks. Handle the exception by retrying the whole read-modify-write or by returning 409 Conflict so the client can reload. Expose the version in DTOs for edit forms.",
+      "example": "@Version private Long version;  UPDATE account SET balance=?, version=6 WHERE id=? AND version=5",
+      "tags": ["jpa", "concurrency", "locking"]
+    },
+    {
+      "type": "basic",
+      "front": "Optimistic vs pessimistic locking: when do you use each?",
+      "back": "Optimistic (@Version) when conflicts are rare: no locks held, retry on conflict. Pessimistic (@Lock(PESSIMISTIC_WRITE), SELECT ... FOR UPDATE) when conflicts are frequent or a retry is expensive.",
+      "explanation": "Pessimistic locks block other transactions and can deadlock if rows are locked in different orders. Always set a lock timeout. For counters, an atomic UPDATE ... SET stock = stock - 1 WHERE stock > 0 is often simpler than either.",
+      "example": "@Lock(LockModeType.PESSIMISTIC_WRITE) @Query(\"select s from Seat s where s.id = :id\") Seat lockById(Long id);",
+      "tags": ["jpa", "concurrency", "locking"]
+    },
+    {
+      "type": "basic",
+      "front": "What is HikariCP and which settings matter most?",
+      "back": "The default JDBC connection pool in Spring Boot. Key settings: maximumPoolSize (default 10), connectionTimeout (default 30 s wait for a connection), maxLifetime (should be shorter than the database or proxy idle cutoff), and leakDetectionThreshold.",
+      "explanation": "A bigger pool is not automatically faster: the database has limited cores and disks, and each service instance multiplies the pool. Total connections = instances × pool size must fit the database's max_connections. 'Connection is not available, request timed out after 30000ms' means the pool was exhausted: look for slow queries or long transactions first.",
+      "example": "spring.datasource.hikari.maximum-pool-size=20, spring.datasource.hikari.leak-detection-threshold=20000",
+      "tags": ["spring-boot", "hikari", "database"]
+    },
+    {
+      "type": "basic",
+      "front": "Why use DTO projections instead of returning entities from a REST API?",
+      "back": "Entities expose internal structure, trigger lazy loading during serialization, can create JSON cycles, and couple the API to the schema. A projection selects only needed columns and is a stable contract.",
+      "explanation": "Spring Data supports interface projections and class or record projections with constructor expressions. For read-heavy endpoints, a projection query is often much faster than loading full entity graphs.",
+      "example": "@Query(\"select new com.acme.OrderSummary(o.id, o.status, o.total) from Order o where o.customer.id = :id\") List<OrderSummary> summaries(Long id);",
+      "tags": ["jpa", "api-design", "performance"]
+    },
+    {
+      "type": "basic",
+      "front": "How should equals() and hashCode() be implemented for JPA entities?",
+      "back": "Use a stable business key, or use the ID with care: equal only when both IDs are non-null and equal, and a constant hashCode (getClass().hashCode()). Avoid Lombok @Data on entities.",
+      "explanation": "A generated ID is null before persist, so an ID-based hashCode changes after save and the entity is lost inside a HashSet. @Data also generates toString and equals over lazy associations, causing extra queries or stack overflows on bidirectional links.",
+      "example": "@Override public int hashCode() { return getClass().hashCode(); }",
+      "tags": ["jpa", "hibernate", "code-review"]
+    },
+    {
+      "type": "basic",
+      "front": "What does spring.jpa.hibernate.ddl-auto do, and what should production use?",
+      "back": "It lets Hibernate create or alter the schema (create, create-drop, update, validate, none). Production should use none or validate, with schema changes done by Flyway or Liquibase migrations.",
+      "explanation": "'update' never drops columns, can't rename safely, and runs uncontrolled DDL at startup. Versioned migrations are reviewed, repeatable, and run the same way in every environment.",
+      "example": "src/main/resources/db/migration/V12__add_order_status_index.sql",
+      "tags": ["spring-boot", "database", "migrations"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you make a database migration safe for a zero-downtime rolling deploy?",
+      "back": "Use expand and contract: first add new columns or tables in a backward-compatible way, deploy code that writes both, backfill, switch reads, and only later drop the old column in a separate release.",
+      "explanation": "During a rolling deploy, old and new versions run at the same time against the same schema. Renaming or dropping a column in one step breaks the old pods. Large index builds may need CREATE INDEX CONCURRENTLY (PostgreSQL) to avoid locking the table.",
+      "example": "Release 1: add column email_normalized (nullable). Release 2: backfill and read it. Release 3: drop email_old.",
+      "tags": ["database", "migrations", "deployment"]
+    },
+    {
+      "type": "basic",
+      "front": "How does @Async work, and what is a common production problem with it?",
+      "back": "The proxy submits the method call to a TaskExecutor and returns immediately (void, CompletableFuture). Problems: self-invocation runs synchronously, exceptions in void methods are swallowed unless an AsyncUncaughtExceptionHandler is configured, and MDC, security, and transaction context do not cross threads.",
+      "explanation": "Spring Boot auto-configures a ThreadPoolTaskExecutor (core 8 threads, unbounded queue by default), so a burst can queue work without limit. Configure pool size, queue capacity, and a TaskDecorator to copy MDC.",
+      "example": "@Async public CompletableFuture<Report> build(...) — callers that immediately call .join() gain nothing.",
+      "tags": ["spring", "async", "concurrency"]
+    },
+    {
+      "type": "basic",
+      "front": "How do Spring Boot property sources override each other, from highest to lowest priority (common ones)?",
+      "back": "Command-line arguments, then OS environment variables, then profile-specific files (application-prod.yml), then application.yml/properties, then @PropertySource and defaults.",
+      "explanation": "Environment variables map with relaxed binding: SPRING_DATASOURCE_URL overrides spring.datasource.url. When a value 'is not what I set', check /actuator/env (secured) or the startup log for the active profiles.",
+      "example": "docker run -e SPRING_PROFILES_ACTIVE=prod -e SERVER_PORT=8081 my-app",
+      "tags": ["spring-boot", "configuration"]
+    },
+    {
+      "type": "basic",
+      "front": "Why prefer @ConfigurationProperties over many @Value annotations?",
+      "back": "It binds a group of properties into a typed, validatable object (records work), supports relaxed binding and IDE metadata, and keeps configuration in one place.",
+      "explanation": "Add @Validated with Bean Validation annotations so the app fails at startup on bad config instead of at the first request. Durations bind from strings like 30s or 5m.",
+      "example": "@ConfigurationProperties(\"payments\") @Validated record PaymentsProps(@NotNull URI baseUrl, Duration timeout, int maxRetries) {}",
+      "tags": ["spring-boot", "configuration"]
+    },
+    {
+      "type": "basic",
+      "front": "@SpringBootTest vs @WebMvcTest vs @DataJpaTest: which do you use?",
+      "back": "@SpringBootTest starts the full context (slow, integration). @WebMvcTest loads only the web layer with MockMvc for controller tests. @DataJpaTest loads JPA, repositories, and a test database, rolling back each test.",
+      "explanation": "Slice tests are faster and fail for clearer reasons. Use @MockitoBean (Spring Boot 3.4+; @MockBean before) to replace dependencies. Each distinct context configuration is cached separately, so many different mock combinations slow the whole suite.",
+      "example": "@WebMvcTest(OrderController.class) class OrderControllerTest { @Autowired MockMvc mvc; @MockitoBean OrderService service; }",
+      "tags": ["spring-boot", "testing"]
+    },
+    {
+      "type": "basic",
+      "front": "Why test JPA repositories against a real database (Testcontainers) instead of H2?",
+      "back": "H2 behaves differently from PostgreSQL or MySQL in SQL dialect, locking, JSON types, sequences, and native queries, so tests can pass on H2 and fail in production.",
+      "explanation": "Testcontainers starts the same database version as production in Docker. Spring Boot 3.1+ supports @ServiceConnection to wire the container's URL automatically. Reuse one container across tests to keep the suite fast.",
+      "example": "@Container @ServiceConnection static PostgreSQLContainer<?> db = new PostgreSQLContainer<>(\"postgres:16\");",
+      "tags": ["testing", "jpa", "testcontainers"]
+    },
+    {
+      "type": "basic",
+      "front": "What should you check in code review for a new Spring Data repository query?",
+      "back": "Is there an index for the WHERE and ORDER BY columns? Is the result bounded (pagination or limit)? Does it fetch associations it will use (N+1)? Is it inside the right transaction? Is a projection enough?",
+      "explanation": "Ask for the generated SQL and, for anything on a large table, the EXPLAIN plan. findAll() on a table that grows without bound is a future outage.",
+      "example": "List<Event> findByStatus(String status) on a 40 million row table with no index on status: full scan per request.",
+      "tags": ["code-review", "jpa", "database"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you see the SQL Hibernate runs and the bind parameters, during development?",
+      "back": "Set logging.level.org.hibernate.SQL=DEBUG for statements and logging.level.org.hibernate.orm.jdbc.bind=TRACE (Hibernate 6) for parameter values. Enable hibernate.generate_statistics to log query counts per session.",
+      "explanation": "spring.jpa.show-sql=true prints to stdout without the logger, so prefer logging levels. Don't enable bind logging in production: it logs personal data and is very noisy. Tools like datasource-proxy can assert query counts in tests.",
+      "example": "logging.level.org.hibernate.SQL=DEBUG",
+      "tags": ["hibernate", "debugging"]
+    },
+    {
+      "type": "cloze",
+      "text": "@Transactional only applies when the method is called through the Spring {{c1::proxy}}; calls via {{c2::this}} skip it.",
+      "extra": "This is the self-invocation trap. It applies to @Cacheable, @Async, and @Retryable too.",
+      "tags": ["spring", "proxy"]
+    },
+    {
+      "type": "cloze",
+      "text": "By default, Spring rolls back on {{c1::unchecked}} exceptions but commits on {{c2::checked}} exceptions.",
+      "extra": "Use rollbackFor = Exception.class when checked exceptions should roll back.",
+      "tags": ["spring", "transactions"]
+    },
+    {
+      "type": "cloze",
+      "text": "In JPA, @ManyToOne defaults to {{c1::EAGER}} fetching and @OneToMany defaults to {{c2::LAZY}}.",
+      "extra": "Common practice is to mark @ManyToOne as LAZY explicitly.",
+      "tags": ["jpa", "fetching"]
+    },
+    {
+      "type": "cloze",
+      "text": "HikariCP's default maximumPoolSize is {{c1::10}} and its default connectionTimeout is {{c2::30 seconds}}.",
+      "extra": "Exhaustion shows up as 'Connection is not available, request timed out after 30000ms'.",
+      "tags": ["hikari", "database"]
+    }
+  ]
+}

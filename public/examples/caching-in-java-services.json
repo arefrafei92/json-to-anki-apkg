@@ -1,0 +1,236 @@
+{
+  "deck": "Caching in Java Services",
+  "description": "Practical caching for backend Java: when to cache, Caffeine and Redis configuration, Spring Cache annotations and their traps, invalidation strategies, stampedes and hot keys, consistency trade-offs, and how to measure whether a cache actually helps.",
+  "cards": [
+    {
+      "type": "basic",
+      "front": "Before adding a cache, which questions should you answer?",
+      "back": "Is the data read much more than written? How stale may it be, and for whom? What is the key and how many distinct keys exist? What is the cost of a miss? How will entries be invalidated? Where does the memory come from?",
+      "explanation": "A cache adds a second copy of the truth, so every cache is a consistency decision. If a slow query can be fixed with an index or a better query, do that first; a cache hides the problem and adds failure modes.",
+      "example": "Product catalog read 5,000 times per second, updated 20 times a day, 10 minutes of staleness acceptable: a strong cache candidate. Account balance: usually not.",
+      "tags": ["caching", "design"]
+    },
+    {
+      "type": "basic",
+      "front": "What is the cache-aside (lazy loading) pattern?",
+      "back": "The application checks the cache; on a miss it reads the database, stores the result in the cache with a TTL, and returns it. On writes it updates the database and then deletes (invalidates) the cache entry.",
+      "explanation": "It is the most common pattern and what Spring @Cacheable implements. Prefer deleting the key on write over writing the new value, because two concurrent writers updating the cache can leave it with the older value.",
+      "example": "get(id): v = redis.get(k); if (v == null) { v = db.load(id); redis.set(k, v, ttl 10m); } return v;",
+      "tags": ["caching", "patterns"]
+    },
+    {
+      "type": "basic",
+      "front": "Write-through vs write-behind (write-back) caching: what is the difference?",
+      "back": "Write-through writes to the cache and the database synchronously on each write, so the cache is always populated. Write-behind writes to the cache first and flushes to the database asynchronously later.",
+      "explanation": "Write-through adds write latency but keeps reads fresh. Write-behind gives fast writes and batching but can lose data if the cache node dies before flushing; it is rarely right for business data in a typical service.",
+      "example": "A view counter can be write-behind (lose a few counts on crash). An order status should not be.",
+      "tags": ["caching", "patterns"]
+    },
+    {
+      "type": "basic",
+      "front": "Local in-process cache (Caffeine) vs distributed cache (Redis): what are the trade-offs?",
+      "back": "Local: nanosecond-to-microsecond reads, no network, but each instance has its own copy (inconsistent across pods), uses heap, and is lost on restart. Distributed: shared across instances and survives deploys, but costs a network round trip (~0.2-1 ms), serialization, and is another system that can fail.",
+      "explanation": "Many services use both: a small local cache with a short TTL in front of Redis for very hot keys. Invalidating local caches across pods needs a message (Redis pub/sub, Kafka) or very short TTLs.",
+      "example": "Feature flags: Caffeine, 30 s TTL per pod. User sessions: Redis, shared across all pods.",
+      "tags": ["caching", "caffeine", "redis"]
+    },
+    {
+      "type": "basic",
+      "front": "Why is a plain ConcurrentHashMap a bad production cache?",
+      "back": "It has no size bound, no expiry, and no eviction, so it grows until OutOfMemoryError, and entries never refresh.",
+      "explanation": "This is a classic heap-dump finding: a static map keyed by request data that grows forever. Use Caffeine with maximumSize or maximumWeight and an expiry policy.",
+      "example": "private static final Map<String, Report> CACHE = new ConcurrentHashMap<>(); — a memory leak with a cache's name.",
+      "tags": ["caching", "memory", "code-review"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you build a bounded Caffeine cache with expiry?",
+      "back": "Caffeine.newBuilder().maximumSize(10_000).expireAfterWrite(Duration.ofMinutes(10)).recordStats().build() — optionally with a CacheLoader to make a LoadingCache.",
+      "explanation": "maximumSize evicts using Window TinyLFU, which keeps frequently used entries better than plain LRU. Use maximumWeight with a weigher when entry sizes vary a lot. recordStats() enables hit rate metrics; Micrometer can bind them.",
+      "example": "LoadingCache<Long, Product> cache = Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofMinutes(5)).recordStats().build(repo::load);",
+      "tags": ["caffeine", "configuration"]
+    },
+    {
+      "type": "basic",
+      "front": "expireAfterWrite vs expireAfterAccess vs refreshAfterWrite in Caffeine?",
+      "back": "expireAfterWrite removes an entry a fixed time after it was written. expireAfterAccess removes it after a period with no reads. refreshAfterWrite keeps serving the old value and reloads it asynchronously on the first read after the period.",
+      "explanation": "expireAfterAccess can keep a hot entry forever, never picking up changes. refreshAfterWrite avoids latency spikes because callers do not wait for the reload; pair it with a longer expireAfterWrite so truly stale entries still expire.",
+      "example": ".refreshAfterWrite(Duration.ofMinutes(1)).expireAfterWrite(Duration.ofMinutes(10))",
+      "tags": ["caffeine", "expiry"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you enable Spring's caching abstraction and back it with Caffeine?",
+      "back": "Add @EnableCaching on a configuration class, include spring-boot-starter-cache and Caffeine, and configure spring.cache.caffeine.spec (or a CaffeineCacheManager bean). Then use @Cacheable, @CachePut, and @CacheEvict.",
+      "explanation": "Without @EnableCaching the annotations do nothing, silently. For different TTLs per cache, register caches individually in the CacheManager instead of one global spec.",
+      "example": "spring.cache.cache-names=products,prices  spring.cache.caffeine.spec=maximumSize=10000,expireAfterWrite=10m",
+      "tags": ["spring-cache", "configuration"]
+    },
+    {
+      "type": "basic",
+      "front": "What do @Cacheable, @CachePut, and @CacheEvict each do?",
+      "back": "@Cacheable returns the cached value if present, otherwise calls the method and caches the result. @CachePut always calls the method and stores its result. @CacheEvict removes an entry (or allEntries = true) when the method is called.",
+      "explanation": "Put @Cacheable on reads and @CacheEvict on the update and delete paths that change the same data. Forgetting to evict on one write path (an admin import, a batch job, another service) is the most common stale-data bug.",
+      "example": "@Cacheable(cacheNames = \"products\", key = \"#id\") Product find(long id);  @CacheEvict(cacheNames = \"products\", key = \"#p.id\") void update(Product p);",
+      "tags": ["spring-cache"]
+    },
+    {
+      "type": "basic",
+      "front": "Why might a @Cacheable method still hit the database on every call?",
+      "back": "Common causes: the call is self-invocation (this.find(), bypassing the proxy), @EnableCaching is missing, the method is not public or the bean was created with 'new', or the key differs each call (for example a parameter whose equals/hashCode is not implemented).",
+      "explanation": "Debug with logging.level.org.springframework.cache=TRACE, which logs cache hits and misses with the computed key, and check the cache's hit rate metric.",
+      "example": "find(new ProductQuery(...)) where ProductQuery is a class without equals: every call is a new key. Make it a record.",
+      "tags": ["spring-cache", "debugging", "proxy"]
+    },
+    {
+      "type": "basic",
+      "front": "How does Spring build the default cache key, and when should you set it explicitly?",
+      "back": "SimpleKeyGenerator: no params gives SimpleKey.EMPTY, one param uses that param, several params are wrapped in a SimpleKey of all of them. Set key explicitly with SpEL when only some parameters identify the data.",
+      "explanation": "Including a parameter that does not affect the result (a request ID, a locale that is ignored) fragments the cache and kills the hit rate. Leaving out one that does matter (tenantId) returns another tenant's data, a serious bug.",
+      "example": "@Cacheable(cacheNames = \"prices\", key = \"#tenantId + ':' + #sku\") Price price(String tenantId, String sku, String traceId)",
+      "tags": ["spring-cache", "keys"]
+    },
+    {
+      "type": "basic",
+      "front": "What happens with null results in @Cacheable, and how do you control it?",
+      "back": "Most Spring cache managers allow null values by default, so a 'not found' result is cached. Use unless = \"#result == null\" to skip caching nulls, or keep caching them deliberately with a short TTL.",
+      "explanation": "Caching misses (negative caching) protects the database from repeated lookups of nonexistent keys, including deliberate cache-penetration attacks. But if the item is created a moment later, readers see 'not found' until the entry expires.",
+      "example": "@Cacheable(cacheNames = \"users\", unless = \"#result == null\")",
+      "tags": ["spring-cache", "negative-caching"]
+    },
+    {
+      "type": "basic",
+      "front": "What is a cache stampede (thundering herd) and how do you prevent it?",
+      "back": "When a hot entry expires, many concurrent requests miss at once and all hit the database to rebuild it. Prevent it with single-flight loading (one loader per key, others wait), refresh-ahead, TTL jitter, or a distributed lock for very expensive rebuilds.",
+      "explanation": "Caffeine's LoadingCache already loads each key once while others wait. In Spring, @Cacheable(sync = true) does the same per instance. Across many pods with Redis, use a short lock key (SET key NX PX 5000) or serve the stale value while one request refreshes.",
+      "example": "Homepage config expires at 12:00:00; 3,000 requests in that second run the same 400 ms query and the database CPU spikes to 100%.",
+      "tags": ["caching", "stampede", "production"]
+    },
+    {
+      "type": "basic",
+      "front": "Why add jitter to cache TTLs?",
+      "back": "If many entries are written at the same time with the same TTL (after a deploy or a warm-up job), they all expire at the same moment and cause a synchronized miss storm.",
+      "explanation": "Randomize the TTL by about ±10-20%. It costs nothing and smooths the load on the database.",
+      "example": "ttl = Duration.ofMinutes(10).plusSeconds(ThreadLocalRandom.current().nextInt(0, 120));",
+      "tags": ["caching", "expiry", "production"]
+    },
+    {
+      "type": "basic",
+      "front": "What is a hot key problem in Redis and how do you mitigate it?",
+      "back": "A single key receives a large share of traffic, so the one Redis shard that owns it saturates while others are idle. Mitigate with a local Caffeine cache in front, key replication (key#1..key#N chosen randomly), or splitting the value.",
+      "explanation": "Redis runs commands on a single main thread per instance, so one hot key caps throughput at that node. Monitor with redis-cli --hotkeys (requires an LFU maxmemory-policy) or per-key metrics in your client.",
+      "example": "A 'global-config' key read on every request by 200 pods: cache it locally for 10 s and Redis traffic drops by orders of magnitude.",
+      "tags": ["redis", "hot-key", "production"]
+    },
+    {
+      "type": "basic",
+      "front": "What is Redis's default eviction policy, and what should a pure cache use?",
+      "back": "The default maxmemory-policy is noeviction: when memory is full, writes fail with an OOM error. A pure cache usually uses allkeys-lru or allkeys-lfu so old entries are evicted automatically.",
+      "explanation": "volatile-* policies only evict keys that have a TTL; if your keys lack TTLs they behave like noeviction. Also set maxmemory, or Redis can grow until the OS kills it.",
+      "example": "maxmemory 4gb  maxmemory-policy allkeys-lfu",
+      "tags": ["redis", "configuration", "eviction"]
+    },
+    {
+      "type": "basic",
+      "front": "What serialization concerns come with caching Java objects in Redis?",
+      "back": "JDK serialization is large, slow, a security risk, and breaks when the class changes. Prefer JSON or a compact schema format, version the key or payload, and make sure readers tolerate unknown fields during rolling deploys.",
+      "explanation": "During a deploy, old and new pods read the same keys. If the new version renamed a field, old pods can fail to deserialize new entries. A key prefix with a version (product:v2:123) lets you switch formats cleanly.",
+      "example": "Spring Data Redis: RedisCacheConfiguration.defaultCacheConfig().serializeValuesWith(fromSerializer(new GenericJackson2JsonRedisSerializer())).entryTtl(Duration.ofMinutes(10))",
+      "tags": ["redis", "serialization", "deployment"]
+    },
+    {
+      "type": "basic",
+      "front": "What should your service do when Redis is slow or down?",
+      "back": "Treat the cache as optional: use short client timeouts (tens of milliseconds), catch cache errors and fall back to the source, and protect the database with a circuit breaker or rate limit so the fallback does not overload it.",
+      "explanation": "A cache with a 2 s default timeout turns a Redis blip into a site-wide outage. Spring's CacheErrorHandler lets you log and ignore cache failures instead of failing the request. Check whether the database can survive 100% misses; if not, you need capacity planning, not just a fallback.",
+      "example": "spring.data.redis.timeout=100ms plus a CacheErrorHandler that logs and continues.",
+      "tags": ["redis", "resilience", "production"]
+    },
+    {
+      "type": "basic",
+      "front": "What race can leave stale data in the cache even with cache-aside and delete-on-write?",
+      "back": "Reader A misses, reads old value from DB; writer B updates DB and deletes the key; reader A then writes the old value into the cache. The stale value stays until TTL.",
+      "explanation": "TTLs bound the damage, which is why every entry should have one. Mitigations: delayed double delete (delete again shortly after the write), versioned values with compare-on-set, or invalidation driven by change data capture from the database log.",
+      "example": "Always set a TTL, even on data you invalidate explicitly. TTL is the safety net for invalidation bugs.",
+      "tags": ["caching", "consistency", "invalidation"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you invalidate local caches on many pods when data changes?",
+      "back": "Publish an invalidation event (Redis pub/sub, Kafka topic, or Spring Cloud Bus) that every instance consumes to evict the key, and keep a short TTL as a fallback in case a message is missed.",
+      "explanation": "Pub/sub is fire-and-forget: a pod that is restarting misses the message. That's acceptable only because the TTL eventually corrects it. For data that must never be stale, don't use a local cache.",
+      "example": "On product update: publish 'product-invalidate:123'; each pod calls cache.invalidate(123).",
+      "tags": ["caching", "invalidation", "distributed"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you prove a cache helps?",
+      "back": "Measure hit rate, miss rate, load latency, eviction count, and size per cache, and compare endpoint p95/p99 latency and database load before and after.",
+      "explanation": "A 30% hit rate with a large memory footprint may cost more than it saves. A high eviction count with a low hit rate means the cache is too small or the keys are too diverse. Caffeine's recordStats() plus Micrometer exposes cache_gets_total{result=hit|miss} and cache_evictions_total.",
+      "example": "PromQL: sum(rate(cache_gets_total{result=\"hit\",cache=\"products\"}[5m])) / sum(rate(cache_gets_total{cache=\"products\"}[5m]))",
+      "tags": ["caching", "metrics", "observability"]
+    },
+    {
+      "type": "basic",
+      "front": "How can a local cache cause GC or memory problems?",
+      "back": "Large caches live long enough to be promoted to the old generation, increasing heap use and old-gen GC work. Unbounded or badly weighted caches lead to OutOfMemoryError.",
+      "explanation": "Size caches by entry count times average entry size and check retained size in a heap dump. Soft references (softValues()) look tempting but make GC behavior unpredictable; prefer explicit maximumSize or maximumWeight.",
+      "example": "100,000 entries × 20 KB = about 2 GB of heap: too large for a pod with -Xmx1g.",
+      "tags": ["caching", "memory", "gc"]
+    },
+    {
+      "type": "basic",
+      "front": "What must you never forget in cache keys for a multi-tenant or per-user service?",
+      "back": "Every dimension that changes the result: tenant, user or permission scope, locale, currency, and API version.",
+      "explanation": "Missing the tenant ID in a key is a data leak: user A sees user B's data from the cache. Code reviewers should check every cache key against the method's authorization rules.",
+      "example": "Key 'dashboard:' + userId is wrong if the dashboard also depends on role. Use 'dashboard:' + tenantId + ':' + userId + ':' + role.",
+      "tags": ["caching", "security", "code-review"]
+    },
+    {
+      "type": "basic",
+      "front": "What are HTTP caching headers and when do they help a backend?",
+      "back": "Cache-Control (max-age, no-store, private/public), ETag with If-None-Match, and Last-Modified with If-Modified-Since let browsers, CDNs, and proxies reuse responses or get a 304 Not Modified.",
+      "explanation": "A CDN in front of public, rarely changing responses can remove most traffic before it reaches your service. Spring supports ETags with ShallowEtagHeaderFilter (saves bandwidth, not CPU) or with ResponseEntity.ok().eTag(...) computed from a version column (saves both).",
+      "example": "Cache-Control: public, max-age=300  /  ETag: \"v42\" -> client sends If-None-Match: \"v42\" -> 304.",
+      "tags": ["http", "caching", "cdn"]
+    },
+    {
+      "type": "basic",
+      "front": "How do you cache a Redis value with TTL atomically, and how do you set a key only if absent?",
+      "back": "SET key value EX 600 sets the value with a 600 s TTL in one command. SET key value NX PX 5000 sets it only if absent with a 5 s TTL, which is the basic building block for a lock or single-flight marker.",
+      "explanation": "Avoid SET followed by EXPIRE in two commands: a crash in between leaves a key that never expires. In Spring Data Redis: opsForValue().set(k, v, Duration) and setIfAbsent(k, v, Duration).",
+      "example": "redisTemplate.opsForValue().setIfAbsent(\"lock:report:42\", podId, Duration.ofSeconds(5));",
+      "tags": ["redis", "commands"]
+    },
+    {
+      "type": "cloze",
+      "text": "Redis's default maxmemory-policy is {{c1::noeviction}}; a pure cache usually uses {{c2::allkeys-lru or allkeys-lfu}}.",
+      "extra": "With noeviction, writes fail with an OOM error when memory is full.",
+      "tags": ["redis", "eviction"]
+    },
+    {
+      "type": "cloze",
+      "text": "In Spring, @Cacheable({{c1::sync = true}}) makes concurrent misses for the same key wait for a single load on that instance.",
+      "extra": "It protects against stampedes within one JVM, not across pods.",
+      "tags": ["spring-cache", "stampede"]
+    },
+    {
+      "type": "cloze",
+      "text": "Caffeine's {{c1::refreshAfterWrite}} serves the old value while reloading in the background; {{c2::expireAfterWrite}} removes the entry so the next caller waits.",
+      "extra": "Use both: refresh for latency, expire as an upper bound on staleness.",
+      "tags": ["caffeine", "expiry"]
+    },
+    {
+      "type": "cloze",
+      "text": "To skip caching null results in Spring, add {{c1::unless = \"#result == null\"}} to @Cacheable.",
+      "extra": "condition is evaluated before the call (on arguments); unless is evaluated after (can use #result).",
+      "tags": ["spring-cache"]
+    },
+    {
+      "type": "cloze",
+      "text": "Every cache entry should have a {{c1::TTL}}, even when you invalidate explicitly, because it bounds the damage of {{c2::missed invalidations}}.",
+      "extra": "Invalidation bugs are common: a forgotten write path, a race, a lost pub/sub message.",
+      "tags": ["caching", "invalidation"]
+    }
+  ]
+}
