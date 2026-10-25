@@ -1,10 +1,12 @@
 "use client";
 
 import { buildApkgInBrowser } from "@/lib/build-apkg-browser";
-import { formatZodError } from "@/lib/deck-schema";
 import { withBasePath } from "@/lib/site-path";
-import { useCallback, useMemo, useState } from "react";
-import { ZodError } from "zod";
+import {
+  validateDeckJsonText,
+  type DeckValidationResult,
+} from "@/lib/validate-deck-json";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const DEFAULT_JSON = `{
   "deckName": "My deck",
@@ -16,48 +18,88 @@ const DEFAULT_JSON = `{
   ]
 }`;
 
-type Status = "idle" | "loading" | "error";
+type Status = "idle" | "validating" | "building" | "error";
+
+function validationMessage(result: DeckValidationResult | null): string | null {
+  if (!result || result.ok) return null;
+  return result.errors.join("\n");
+}
 
 export function DeckConverter() {
   const [jsonText, setJsonText] = useState(DEFAULT_JSON);
   const [status, setStatus] = useState<Status>("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [uploadName, setUploadName] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [debouncedJson, setDebouncedJson] = useState(jsonText);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedJson(jsonText), 350);
+    return () => window.clearTimeout(timer);
+  }, [jsonText]);
+
+  const validation = useMemo(
+    () => validateDeckJsonText(debouncedJson),
+    [debouncedJson],
+  );
+
+  const isDirty = jsonText !== debouncedJson;
+  const isValid = validation.ok && !isDirty;
+  const validationError = isDirty ? null : validationMessage(validation);
 
   const lineCount = useMemo(() => jsonText.split("\n").length, [jsonText]);
 
   const loadExample = useCallback(async (path: string) => {
-    setError(null);
+    setStatus("idle");
+    setUploadName(null);
+    setUploadError(null);
     try {
       const res = await fetch(withBasePath(path));
       if (!res.ok) throw new Error("Could not load sample");
       setJsonText(await res.text());
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load sample");
+      setUploadError(
+        e instanceof Error ? e.message : "Failed to load sample",
+      );
     }
   }, []);
 
   const onFilePick = useCallback(async (file: File | null) => {
     if (!file) return;
-    setError(null);
+    setUploadError(null);
+    setUploadName(file.name);
+
+    const name = file.name.toLowerCase();
+    if (!name.endsWith(".json")) {
+      setUploadError("Please choose a .json file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("JSON file is too large (max 5 MB).");
+      return;
+    }
+
+    setStatus("validating");
     try {
-      setJsonText(await file.text());
+      const text = await file.text();
+      setJsonText(text);
+      setStatus("idle");
     } catch {
-      setError("Could not read that file");
+      setUploadError("Could not read that file.");
+      setStatus("error");
     }
   }, []);
 
   const downloadApkg = useCallback(async () => {
-    setStatus("loading");
-    setError(null);
-    try {
-      let payload: unknown;
-      try {
-        payload = JSON.parse(jsonText);
-      } catch {
-        throw new Error("Fix JSON syntax before generating the deck.");
-      }
+    setStatus("building");
+    const result = validateDeckJsonText(jsonText);
+    if (!result.ok) {
+      setStatus("error");
+      return;
+    }
 
-      const { bytes, filename } = await buildApkgInBrowser(payload);
+    try {
+      const { bytes, filename } = await buildApkgInBrowser(result.data);
       const blob = new Blob([bytes.slice()], {
         type: "application/octet-stream",
       });
@@ -71,13 +113,11 @@ export function DeckConverter() {
       setStatus("idle");
     } catch (e) {
       setStatus("error");
-      if (e instanceof ZodError) {
-        setError(`Invalid deck JSON:\n${formatZodError(e)}`);
-      } else {
-        setError(e instanceof Error ? e.message : "Something went wrong");
-      }
+      console.error(e);
     }
   }, [jsonText]);
+
+  const displayError = uploadError ?? validationError;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 sm:px-6">
@@ -89,11 +129,9 @@ export function DeckConverter() {
           JSON to .apkg
         </h1>
         <p className="max-w-2xl text-base leading-relaxed text-zinc-600">
-          Paste or upload deck JSON, then download an Anki package you can import in
-          Anki desktop or AnkiWeb. Decks are built in your browser—no upload to a
-          server. Anki uses the{" "}
-          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">.apkg</code>{" "}
-          format (sometimes called a deck package).
+          Paste or upload a <code className="text-sm">.json</code> deck file. We
+          validate the format, then build an Anki package in your browser—nothing
+          is uploaded to a server.
         </p>
       </header>
 
@@ -115,15 +153,24 @@ export function DeckConverter() {
           Load workplace deck
         </button>
         <label className="cursor-pointer rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50">
-          Upload .json
+          Select .json file
           <input
             type="file"
             accept="application/json,.json"
             className="sr-only"
-            onChange={(e) => onFilePick(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              void onFilePick(e.target.files?.[0] ?? null);
+              e.target.value = "";
+            }}
           />
         </label>
       </div>
+
+      {uploadName ? (
+        <p className="text-sm text-zinc-600">
+          File: <span className="font-medium text-zinc-900">{uploadName}</span>
+        </p>
+      ) : null}
 
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-4">
@@ -137,39 +184,67 @@ export function DeckConverter() {
           value={jsonText}
           onChange={(e) => {
             setJsonText(e.target.value);
-            setError(null);
+            setUploadName(null);
+            setUploadError(null);
             if (status === "error") setStatus("idle");
           }}
           spellCheck={false}
-          className="min-h-[320px] w-full resize-y rounded-xl border border-zinc-200 bg-zinc-50/80 p-4 font-mono text-sm leading-relaxed text-zinc-900 shadow-inner outline-none ring-emerald-600/30 focus:border-emerald-600 focus:ring-2"
+          aria-invalid={Boolean(displayError)}
+          aria-describedby={displayError ? "deck-json-error" : "deck-json-hint"}
+          className={`min-h-[320px] w-full resize-y rounded-xl border bg-zinc-50/80 p-4 font-mono text-sm leading-relaxed text-zinc-900 shadow-inner outline-none ring-emerald-600/30 focus:ring-2 ${
+            displayError
+              ? "border-red-300 focus:border-red-500 focus:ring-red-200"
+              : isValid
+                ? "border-emerald-300 focus:border-emerald-600"
+                : "border-zinc-200 focus:border-emerald-600"
+          }`}
         />
       </div>
 
-      {error ? (
+      {isDirty ? (
+        <p id="deck-json-hint" className="text-sm text-zinc-500">
+          Checking format…
+        </p>
+      ) : isValid ? (
         <div
+          id="deck-json-hint"
+          className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
+          role="status"
+        >
+          Format looks good. Ready to build{" "}
+          <span className="font-semibold">{validation.deckName}</span> with{" "}
+          {validation.cardCount} card{validation.cardCount === 1 ? "" : "s"}.
+        </div>
+      ) : null}
+
+      {displayError ? (
+        <div
+          id="deck-json-error"
           role="alert"
           className="whitespace-pre-wrap rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
         >
-          {error}
+          {displayError}
         </div>
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <button
           type="button"
-          disabled={status === "loading"}
-          onClick={downloadApkg}
+          disabled={!isValid || status === "building"}
+          onClick={() => void downloadApkg()}
           className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {status === "loading" ? "Building deck…" : "Download .apkg"}
+          {status === "building" ? "Generating deck…" : "Generate .apkg"}
         </button>
         <p className="text-sm text-zinc-500">
-          Import in Anki: File → Import, then choose the downloaded file.
+          {isValid
+            ? "Download the file, then import it in Anki (File → Import)."
+            : "Fix validation errors above to enable generation."}
         </p>
       </div>
 
       <section className="rounded-xl border border-zinc-200 bg-white p-5 text-sm text-zinc-600 shadow-sm">
-        <h2 className="mb-2 font-semibold text-zinc-900">JSON format</h2>
+        <h2 className="mb-2 font-semibold text-zinc-900">Required JSON shape</h2>
         <ul className="list-inside list-disc space-y-1">
           <li>
             <code className="text-zinc-800">deckName</code>,{" "}
@@ -177,24 +252,16 @@ export function DeckConverter() {
             <code className="text-zinc-800">deck</code> — deck title
           </li>
           <li>
-            <code className="text-zinc-800">cards</code> — basic (
+            <code className="text-zinc-800">cards</code> — at least one basic card (
             <code className="text-zinc-800">front</code>,{" "}
             <code className="text-zinc-800">back</code>, optional{" "}
             <code className="text-zinc-800">explanation</code>,{" "}
-            <code className="text-zinc-800">example</code>) or cloze (
+            <code className="text-zinc-800">example</code>) or cloze card (
             <code className="text-zinc-800">type: &quot;cloze&quot;</code>,{" "}
             <code className="text-zinc-800">text</code>)
           </li>
-          <li>Optional per card: <code className="text-zinc-800">tags</code>, subdeck{" "}
-            <code className="text-zinc-800">deck</code>
-          </li>
+          <li>Optional per card: <code className="text-zinc-800">tags</code></li>
         </ul>
-        <p className="mt-3">
-          CLI:{" "}
-          <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-800">
-            npm run json-to-apkg -- examples/sample-deck.json
-          </code>
-        </p>
       </section>
     </div>
   );

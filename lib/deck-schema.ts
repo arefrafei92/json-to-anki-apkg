@@ -20,15 +20,49 @@ const clozeCardSchema = z.object({
   noteId: z.union([z.string(), z.number()]).optional(),
 });
 
-export const deckJsonSchema = z.object({
-  deckName: z.string().min(1).optional(),
-  name: z.string().min(1).optional(),
-  deck: z.string().min(1).optional(),
-  description: z.string().optional(),
-  cards: z
-    .array(z.union([basicCardSchema, clozeCardSchema]))
-    .min(1, "At least one card is required"),
-});
+const cardSchema = z
+  .union([basicCardSchema, clozeCardSchema])
+  .superRefine((card, ctx) => {
+    if (
+      "type" in card &&
+      card.type !== "cloze" &&
+      card.type !== "basic" &&
+      card.type !== undefined
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        message: 'Card type must be "basic" or "cloze".',
+        path: ["type"],
+      });
+    }
+    if (!("type" in card && card.type === "cloze")) {
+      if (!("front" in card) || !("back" in card)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Basic cards require front and back fields.",
+          path: ["front"],
+        });
+      }
+    }
+  });
+
+export const deckJsonSchema = z
+  .object({
+    deckName: z.string().min(1).optional(),
+    name: z.string().min(1).optional(),
+    deck: z.string().min(1).optional(),
+    description: z.string().optional(),
+    cards: z.array(cardSchema).min(1, "At least one card is required"),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.deckName && !data.name && !data.deck) {
+      ctx.addIssue({
+        code: "custom",
+        message: 'Include "deckName", "name", or "deck" for the deck title.',
+        path: ["deck"],
+      });
+    }
+  });
 
 export type DeckJson = z.infer<typeof deckJsonSchema>;
 export type BasicCard = z.infer<typeof basicCardSchema>;
