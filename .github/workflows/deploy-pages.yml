@@ -24,6 +24,7 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
+      - run: npm run check:decks
       - run: cp node_modules/sql.js/dist/sql-wasm.wasm public/sql-wasm.wasm
       - run: GITHUB_PAGES=true npm run build
       - uses: actions/upload-pages-artifact@v3
