@@ -7,7 +7,18 @@ Includes:
 - A small **web app** — paste JSON and download the deck
 - A **CLI script** — convert `.json` files locally
 
-## Quick start (web)
+## Live site (free on GitHub Pages)
+
+**https://arefrafei92.github.io/json-to-anki-apkg/**
+
+Public repos get free static hosting from GitHub. This app runs entirely in your
+browser (JSON never leaves your device). After each push to `main`, GitHub Actions
+deploys the site automatically.
+
+First-time setup (once per repo): GitHub → **Settings → Pages → Build and
+deployment → Source: GitHub Actions**.
+
+## Quick start (local)
 
 ```bash
 npm install

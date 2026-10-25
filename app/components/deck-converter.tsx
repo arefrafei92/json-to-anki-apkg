@@ -1,6 +1,10 @@
 "use client";
 
+import { buildApkgInBrowser } from "@/lib/build-apkg-browser";
+import { formatZodError } from "@/lib/deck-schema";
+import { withBasePath } from "@/lib/site-path";
 import { useCallback, useMemo, useState } from "react";
+import { ZodError } from "zod";
 
 const DEFAULT_JSON = `{
   "deckName": "My deck",
@@ -24,7 +28,7 @@ export function DeckConverter() {
   const loadExample = useCallback(async (path: string) => {
     setError(null);
     try {
-      const res = await fetch(path);
+      const res = await fetch(withBasePath(path));
       if (!res.ok) throw new Error("Could not load sample");
       setJsonText(await res.text());
     } catch (e) {
@@ -53,25 +57,10 @@ export function DeckConverter() {
         throw new Error("Fix JSON syntax before generating the deck.");
       }
 
-      const res = await fetch("/api/apkg", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      const { bytes, filename } = await buildApkgInBrowser(payload);
+      const blob = new Blob([bytes.slice()], {
+        type: "application/octet-stream",
       });
-
-      if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as {
-          error?: string;
-          details?: string;
-        } | null;
-        const detail = data?.details ? `\n${data.details}` : "";
-        throw new Error((data?.error ?? "Generation failed") + detail);
-      }
-
-      const blob = await res.blob();
-      const disposition = res.headers.get("Content-Disposition") ?? "";
-      const match = disposition.match(/filename="([^"]+)"/);
-      const filename = match?.[1] ?? "deck.apkg";
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -82,7 +71,11 @@ export function DeckConverter() {
       setStatus("idle");
     } catch (e) {
       setStatus("error");
-      setError(e instanceof Error ? e.message : "Something went wrong");
+      if (e instanceof ZodError) {
+        setError(`Invalid deck JSON:\n${formatZodError(e)}`);
+      } else {
+        setError(e instanceof Error ? e.message : "Something went wrong");
+      }
     }
   }, [jsonText]);
 
@@ -97,7 +90,8 @@ export function DeckConverter() {
         </h1>
         <p className="max-w-2xl text-base leading-relaxed text-zinc-600">
           Paste or upload deck JSON, then download an Anki package you can import in
-          Anki desktop or AnkiWeb. Anki uses the{" "}
+          Anki desktop or AnkiWeb. Decks are built in your browser—no upload to a
+          server. Anki uses the{" "}
           <code className="rounded bg-zinc-100 px-1.5 py-0.5 text-sm">.apkg</code>{" "}
           format (sometimes called a deck package).
         </p>
@@ -106,10 +100,19 @@ export function DeckConverter() {
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
-          onClick={loadSample}
+          onClick={() => loadExample("/examples/sample-deck.json")}
           className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
         >
           Load sample JSON
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            loadExample("/examples/workplace-english-intermediate.json")
+          }
+          className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+        >
+          Load workplace deck
         </button>
         <label className="cursor-pointer rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50">
           Upload .json
