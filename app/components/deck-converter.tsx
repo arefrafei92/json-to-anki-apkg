@@ -1,18 +1,15 @@
 "use client";
 
 import { buildApkgInBrowser } from "@/lib/build-apkg-browser";
-import {
-  deckCategories,
-  sharedDecks,
-  type DeckCategory,
-} from "@/lib/shared-decks";
-import { withBasePath } from "@/lib/site-path";
+import { downloadBytes } from "@/lib/download-bytes";
+import { sharedDecks } from "@/lib/shared-decks";
 import {
   validateDeckJsonText,
   type DeckValidationResult,
 } from "@/lib/validate-deck-json";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ThemeToggle } from "./theme-toggle";
+import Link from "next/link";
+import { SiteHeader } from "./site-header";
 
 const DEFAULT_JSON = `{
   "deckName": "My deck",
@@ -25,7 +22,6 @@ const DEFAULT_JSON = `{
 }`;
 
 type Status = "idle" | "validating" | "building" | "error";
-type CategoryFilter = DeckCategory | "All";
 
 function validationMessage(result: DeckValidationResult | null): string | null {
   if (!result || result.ok) return null;
@@ -40,8 +36,6 @@ export function DeckConverter() {
   const [status, setStatus] = useState<Status>("idle");
   const [uploadName, setUploadName] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null);
-  const [category, setCategory] = useState<CategoryFilter>("All");
   const [debouncedJson, setDebouncedJson] = useState(jsonText);
 
   useEffect(() => {
@@ -59,35 +53,6 @@ export function DeckConverter() {
   const validationError = isDirty ? null : validationMessage(validation);
 
   const lineCount = useMemo(() => jsonText.split("\n").length, [jsonText]);
-
-  const groupedDecks = useMemo(
-    () =>
-      deckCategories
-        .filter((c) => category === "All" || c === category)
-        .map((c) => ({
-          category: c,
-          decks: sharedDecks.filter((d) => d.category === c),
-        }))
-        .filter((g) => g.decks.length > 0),
-    [category],
-  );
-
-  const selectSharedDeck = useCallback(async (id: string, path: string) => {
-    setStatus("idle");
-    setUploadName(null);
-    setUploadError(null);
-    setSelectedDeckId(id);
-    try {
-      const res = await fetch(withBasePath(path));
-      if (!res.ok) throw new Error("Could not load that shared deck");
-      setJsonText(await res.text());
-    } catch (e) {
-      setSelectedDeckId(null);
-      setUploadError(
-        e instanceof Error ? e.message : "Failed to load shared deck",
-      );
-    }
-  }, []);
 
   const onFilePick = useCallback(async (file: File | null) => {
     if (!file) return;
@@ -124,16 +89,7 @@ export function DeckConverter() {
 
     try {
       const { bytes, filename } = await buildApkgInBrowser(result.data);
-      const blob = new Blob([bytes.slice()], {
-        type: "application/octet-stream",
-      });
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
+      downloadBytes(bytes, filename);
       setStatus("idle");
     } catch (e) {
       setStatus("error");
@@ -147,117 +103,42 @@ export function DeckConverter() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-10 sm:px-6">
+      <SiteHeader />
+
       <header className="space-y-3">
-        <div className="flex items-start justify-between gap-4">
-          <p className="text-sm font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
-            Anki deck builder
-          </p>
-          <ThemeToggle />
-        </div>
+        <p className="text-sm font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+          Anki deck builder
+        </p>
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
           JSON to .apkg
         </h1>
         <p className="max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-          Choose a shared deck from the repo, or paste and upload your own JSON.
-          We validate the format, then build an Anki package in your browser.
+          Paste or upload your own deck JSON. We validate the format, then build
+          an Anki package in your browser.
         </p>
       </header>
 
-      <section className="space-y-4">
-        <div className="flex items-baseline justify-between gap-4">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Shared decks
-          </h2>
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">
-            {sharedDecks.length} decks in the repo
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
-          {(["All", ...deckCategories] as CategoryFilter[]).map((c) => {
-            const active = category === c;
-            return (
-              <button
-                key={c}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setCategory(c)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                  active
-                    ? "bg-emerald-600 text-white dark:bg-emerald-500 dark:text-zinc-950"
-                    : "bg-white text-zinc-600 ring-1 ring-zinc-200 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-300 dark:ring-zinc-700 dark:hover:bg-zinc-800"
-                }`}
-              >
-                {c}
-              </button>
-            );
-          })}
-        </div>
-
-        {groupedDecks.map((group) => (
-          <div key={group.category} className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              {group.category}
-            </h3>
-            <ul className="grid gap-3">
-              {group.decks.map((deck) => {
-                const selected = selectedDeckId === deck.id;
-                return (
-                  <li key={deck.id}>
-                    <button
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => void selectSharedDeck(deck.id, deck.file)}
-                      className={`w-full rounded-xl border px-4 py-4 text-left shadow-sm transition ${
-                        selected
-                          ? "border-emerald-600 bg-emerald-50 ring-2 ring-emerald-600/30 dark:border-emerald-500 dark:bg-emerald-950/40 dark:ring-emerald-500/30"
-                          : "border-zinc-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/40 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/20"
-                      }`}
-                    >
-                      <span className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-50">
-                          {deck.title}
-                        </span>
-                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                          {deck.cards} cards
-                        </span>
-                        {selected ? (
-                          <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                            Selected
-                          </span>
-                        ) : null}
-                      </span>
-                      <span className="mt-1 block text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                        {deck.description}
-                      </span>
-                      <span className="mt-2 flex flex-wrap gap-1.5">
-                        {deck.topics.map((topic) => (
-                          <span
-                            key={topic}
-                            className="rounded-md bg-white px-2 py-0.5 text-xs text-zinc-500 ring-1 ring-zinc-200 dark:bg-zinc-950 dark:text-zinc-400 dark:ring-zinc-700"
-                          >
-                            {topic}
-                          </span>
-                        ))}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </section>
+      <Link
+        href="/decks"
+        className="group flex items-center justify-between gap-4 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-sm transition hover:border-emerald-400 hover:bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30 dark:hover:border-emerald-700"
+      >
+        <span className="text-emerald-900 dark:text-emerald-200">
+          <span className="font-semibold">Looking for a ready-made deck?</span>{" "}
+          Browse {sharedDecks.length} shared decks and download any of them in one click.
+        </span>
+        <span aria-hidden="true" className="font-semibold text-emerald-700 transition group-hover:translate-x-0.5 dark:text-emerald-400">
+          →
+        </span>
+      </Link>
 
       <div className="flex flex-wrap items-center gap-3">
         <label className={`cursor-pointer ${secondaryButton}`}>
-          Or select a .json file
+          Select a .json file
           <input
             type="file"
             accept="application/json,.json"
             className="sr-only"
             onChange={(e) => {
-              setSelectedDeckId(null);
               void onFilePick(e.target.files?.[0] ?? null);
               e.target.value = "";
             }}
@@ -293,7 +174,6 @@ export function DeckConverter() {
             setJsonText(e.target.value);
             setUploadName(null);
             setUploadError(null);
-            setSelectedDeckId(null);
             if (status === "error") setStatus("idle");
           }}
           spellCheck={false}

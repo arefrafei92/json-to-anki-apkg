@@ -8,9 +8,12 @@ const nextConfig: NextConfig = {
   ...(isGitHubPages
     ? {
         output: "export",
+        // GitHub Pages serves folders, so /decks must be decks/index.html.
+        trailingSlash: true,
         images: { unoptimized: true },
       }
     : { serverExternalPackages: ["anki-apkg-export"] }),
+  allowedDevOrigins: ["127.0.0.1"],
   basePath,
   assetPrefix: basePath ? `${basePath}/` : undefined,
   env: {
